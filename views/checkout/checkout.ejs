@@ -1,233 +1,273 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>Checkout</title>
+<% layout('layouts/focused') %>
+<% block('title', 'Checkout') %>
+<% block('styles', '<link rel="stylesheet" href="/styles/pages/checkout.css">') %>
+<% block('scripts', '<script src="/scripts/checkout.js" defer></script>') %>
 
-    <!-- This code is needed for responsive design to work.
-      (Responsive design = make the website look good on
-      smaller screen sizes like a phone or a tablet). -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <meta name="csrf-token" content="<%= csrfToken %>">
+<% block('focusedHeader', `
+    <p class="focused-header__title">
+        Checkout
+        <span class="text-muted js-cart-label">${
+            cartQuantity === 1 ? '1 item' : cartQuantity + ' items'
+        }</span>
+    </p>
 
-    <!-- Load a font called Roboto from Google Fonts. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <p class="focused-header__meta">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>
+            <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"></path>
+        </svg>
+        Secure checkout
+    </p>
+`) %>
 
-    <!-- Here are the CSS files for this page. -->
-    <link rel="stylesheet" href="/styles/shared/general.css">
-    <link rel="stylesheet" href="/styles/pages/checkout/checkout-header.css">
-    <link rel="stylesheet" href="/styles/pages/checkout/checkout.css">
-    <script src="/scripts/http.js" defer></script>
-    <script src="/scripts/checkout.js" defer></script>
-  </head>
-  <body>
-    <div class="checkout-header">
-      <div class="header-content">
-        <div class="checkout-header-left-section">
-          <a href="/products">
-            <img class="amazon-logo" src="/images/amazon-logo.png">
-            <img class="amazon-mobile-logo" src="/images/amazon-mobile-logo.png">
-          </a>
-        </div>
+<main class="page" id="main">
 
-        <div class="checkout-header-middle-section">
-          Checkout (
-            <a class="return-to-home-link js-return-to-home-link" 
-            href="/products"><%= cartQuantity%> items</a>
-          )
-        </div>
+    <div class="container">
 
-        <a href="/cart">
-          <button class="cart-button">Go to cart</button>
-        </a>
-        <a href="/products">
-          <button class="cart-button">Add more products</button>
-        </a>
+        <% if (cart.items.length === 0) { %>
 
-        <div class="checkout-header-right-section">
-          <img src="/images/icons/checkout-lock-icon.png">
-        </div>
-      </div>
-    </div>
+            <div class="card">
+                <div class="empty-state">
 
-    <div class="main">
-      <div class="page-title">Review your order</div>
+                    <span class="empty-state__art">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2.5 4h2.4l2.2 10.6a1.7 1.7 0 0 0 1.7 1.4h8.4a1.7 1.7 0 0 0 1.6-1.3L20.5 8H6" />
+                            <circle cx="9.5" cy="19.5" r="1.5" />
+                            <circle cx="17" cy="19.5" r="1.5" />
+                        </svg>
+                    </span>
 
-      <div class="checkout-grid">
-        <div class="order-summary">
-          <% if (cart.items.length === 0) { %>
+                    <h1 class="empty-state__title">There is nothing to check out</h1>
 
-            <div class="empty-checkout">
-              <h2 class="empty-checkout-title">Your cart is empty</h2>
-              <p class="empty-checkout-message">
-                Add something to your cart before checking out.
-              </p>
-              <a class="empty-checkout-link" href="/products">Continue shopping</a>
+                    <p class="empty-state__message">
+                        Your cart is empty. Add something to it and come back to
+                        complete your order.
+                    </p>
+
+                    <div class="empty-state__actions">
+                        <a class="btn btn--primary" href="/products">
+                            Continue shopping
+                        </a>
+                    </div>
+
+                </div>
             </div>
 
-          <% } %>
+        <% } else { %>
 
-            <% cart.items.forEach((item) => { %>
-                <div class="cart-item-container js-cart-item-container
-                js-cart-item-container-<%= item.product._id%>">
+            <div class="page-header">
+                <h1 class="page-title">Review your order</h1>
 
-                <% 
-                  const selectedDeliveryOption = getDeliveryOption(item.deliveryOptionId);
-                %>
-                  <div class="delivery-date js-delivery-date-<%= item.product._id %>">
-                    Delivery date: <%= deliveryDateLabel(selectedDeliveryOption) %>
-                  </div>
-                
-                  <div class="cart-item-details-grid">
-                    <img class="product-image" src="<%= item.product.image %>">
-                
-                    <div class="cart-item-details">
-                      <div class="product-name">
-                        <%= item.product.name %>
-                      </div>
-                      <div class="product-price js-product-price-<%= item.product._id%>">
-                          $ <%= ((item.product.priceCents / 100) * item.quantity).toFixed(2) %>
-                      </div>
-                      <div class="product-quantity">
-                        <span>
-                          Quantity: <span class="quantity-label js-quantity-label-<%= item.product._id %> "><%= item.quantity%></span>
-                        </span>
-                        <span class="update-quantity-link link-primary 
-                          js-update-quantity-link" data-product-id="<%= item.product._id%>">
-                          Update
-                        </span>
-                        <input name="quantity-input" class="quantity-input js-quantity-input-<%= item.product._id%>">
-                        <span class="save-quantity-link link-primary quantity-input
-                        js-save-link" data-product-id="<%= item.product._id%>">Save</span>
-                        <span class="delete-quantity-link link-primary js-delete-link
-                        js-delete-link-<%= item.product._id%>"
-                        data-product-id="<%= item.product._id %>">
-                          Delete
-                        </span>
-                      </div>
-                    </div>
-                
-                    <div class="delivery-options">
-                      <div class="delivery-options-title">
-                        Choose a delivery option:
-                      </div>
-                      <% deliveryOptions.forEach((deliveryOption) => { %>
+                <a class="link link-back" href="/cart">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 5l-7 7 7 7" />
+                    </svg>
+                    Back to cart
+                </a>
+            </div>
 
-                          <% 
-                            const isChecked  = deliveryOption.id === item.deliveryOptionId;
-                            const deliveryDate = deliveryDateLabel(deliveryOption);
-                          %>
+            <div class="checkout-layout">
 
-                          <div
-                            class="delivery-option js-delivery-option"
-                            data-product-id="<%= item.product._id%>"
-                            data-delivery-option-id="<%= deliveryOption.id %>"
-                          >
+                <section class="checkout-items js-checkout-list" aria-label="Items in this order" data-max-quantity="<%= maxItemQuantity %>">
 
-                              <input 
-                                type="radio"
-                                value="<%= deliveryOption.id %>"
-                                <%= isChecked ? 'checked' : '' %>
-                                class="delivery-option-input"
-                                name="delivery-option-<%= item.product._id %>"
-                              >
+                    <% cart.items.forEach((item) => { %>
 
-                              <div>
+                        <%
+                            const productId = item.product._id;
+                            const selectedOption = getDeliveryOption(item.deliveryOptionId);
+                            const linePrice = (
+                                (item.product.priceCents * item.quantity) / 100
+                            ).toFixed(2);
+                        %>
 
-                                <div class="delivery-option-date">
-                                  <%= deliveryDate %>
+                        <article class="card checkout-item js-checkout-item" data-product-id="<%= productId %>">
+
+                            <p class="checkout-item__eta js-delivery-date" data-product-id="<%= productId %>">
+                                Delivery date: <%= deliveryDateLabel(selectedOption) %>
+                            </p>
+
+                            <div class="checkout-item__grid">
+
+                                <a class="checkout-item__media" href="/products/<%= productId %>" tabindex="-1" aria-hidden="true">
+                                    <img src="/<%= item.product.image %>" alt="" loading="lazy" decoding="async">
+                                </a>
+
+                                <div class="checkout-item__details">
+
+                                    <h2 class="checkout-item__title">
+                                        <a href="/products/<%= productId %>">
+                                            <span class="clamp-2"><%= item.product.name %></span>
+                                        </a>
+                                    </h2>
+
+                                    <p class="price price--accent checkout-item__price js-item-price" data-product-id="<%= productId %>">
+                                        $<%= linePrice %>
+                                    </p>
+
+                                    <div class="checkout-item__actions">
+
+                                        <div class="stepper js-stepper" data-product-id="<%= productId %>">
+                                            <button
+                                                type="button"
+                                                class="stepper__button js-decrease"
+                                                data-product-id="<%= productId %>"
+                                                <%= item.quantity <= 1 ? 'disabled' : '' %>
+                                            >
+                                                <span aria-hidden="true">&minus;</span>
+                                                <span class="visually-hidden">
+                                                    Decrease quantity of <%= item.product.name %>
+                                                </span>
+                                            </button>
+
+                                            <span
+                                                class="stepper__value js-quantity"
+                                                data-product-id="<%= productId %>"
+                                                role="status"
+                                            ><%= item.quantity %></span>
+
+                                            <button
+                                                type="button"
+                                                class="stepper__button js-increase"
+                                                data-product-id="<%= productId %>"
+                                                <%= item.quantity >= maxItemQuantity ? 'disabled' : '' %>
+                                            >
+                                                <span aria-hidden="true">+</span>
+                                                <span class="visually-hidden">
+                                                    Increase quantity of <%= item.product.name %>
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            class="btn btn--sm btn--danger js-remove-item"
+                                            data-product-id="<%= productId %>"
+                                            data-product-name="<%= item.product.name %>"
+                                        >
+                                            Remove
+                                        </button>
+
+                                    </div>
+
                                 </div>
 
-                                <div class="delivery-option-price">
-                                    <% if (deliveryOption.priceCents === 0) { %>
-                                      
-                                        FREE Shipping
+                                <fieldset class="delivery-options">
 
-                                    <% } else { %>
-                                        
-                                        $<%= (deliveryOption.priceCents / 100).toFixed(2) %> - Shipping
+                                    <legend class="delivery-options__title">
+                                        Choose a delivery option
+                                    </legend>
 
-                                    <% } %>
-                                </div>
-                              </div>
+                                    <% deliveryOptions.forEach((option) => { %>
 
-                          </div>
-                          
-                      <% }) %>
-                    </div>
-                  </div>
-                </div>
+                                        <%
+                                            const inputId = 'delivery-' + productId + '-' + option.id;
+                                            const isChecked = option.id === item.deliveryOptionId;
+                                        %>
 
-            <%}) %>
-        </div>
+                                        <div class="delivery-option">
 
-        <% if (cart.items.length !== 0) { %>
-        <div class="payment-summary">
-          <div class="payment-summary-title">
-            Order Summary
-          </div>
+                                            <input
+                                                type="radio"
+                                                class="delivery-option__input js-delivery-option"
+                                                id="<%= inputId %>"
+                                                name="delivery-option-<%= productId %>"
+                                                value="<%= option.id %>"
+                                                data-product-id="<%= productId %>"
+                                                <%= isChecked ? 'checked' : '' %>
+                                            >
 
-          <div class="payment-summary-row">
-            <div class="js-payment-summary-cart-items">Items (<%= cartQuantity %>):</div>
-            <div class="payment-summary-money js-payment-summary-money">$<%= subtotal %></div>
-          </div>
+                                            <label class="delivery-option__label" for="<%= inputId %>">
+                                                <span class="delivery-option__date">
+                                                    <%= deliveryDateLabel(option) %>
+                                                </span>
 
-          <div class="payment-summary-row">
-            <div>Shipping &amp; handling:</div>
-            <div class="payment-summary-money js-shipping-handling">$<%= totalShippingCost %></div>
-          </div>
+                                                <span class="delivery-option__price">
+                                                    <% if (option.priceCents === 0) { %>
+                                                        FREE shipping
+                                                    <% } else { %>
+                                                        $<%= (option.priceCents / 100).toFixed(2) %> shipping
+                                                    <% } %>
+                                                </span>
+                                            </label>
 
-          <div class="payment-summary-row subtotal-row">
-            <div>Total before tax:</div>
-            <div class="payment-summary-money js-total-before-tax">$<%= totalBeforeTax %></div>
-          </div>
+                                        </div>
 
-          <div class="payment-summary-row">
-            <div>Estimated tax (10%):</div>
-            <div class="payment-summary-money js-estimated-tax">$<%= estimatedTax %></div>
-          </div>
+                                    <% }) %>
 
-          <div class="payment-summary-row total-row">
-            <div>Order total:</div>
-            <div class="payment-summary-money js-order-total">$<%= orderTotal%></div>
-          </div>
+                                </fieldset>
 
-          <button class="place-order-button button-primary js-place-order-button">
-            <span class="js-place-order-text">Place your order</span>
+                            </div>
 
-            <span class="place-order-spin js-place-order-spinner"></span>
-          </button>
+                        </article>
 
-        </div>
+                    <% }) %>
+
+                </section>
+
+                <aside class="card card--padded order-summary" aria-labelledby="summary-heading">
+
+                    <h2 class="order-summary__title" id="summary-heading">Order summary</h2>
+
+                    <dl class="order-summary__rows">
+
+                        <div class="order-summary__row">
+                            <dt>Items (<span class="js-cart-count"><%= cartQuantity %></span>)</dt>
+                            <dd class="js-subtotal">$<%= subtotal %></dd>
+                        </div>
+
+                        <div class="order-summary__row">
+                            <dt>Shipping &amp; handling</dt>
+                            <dd class="js-shipping">$<%= totalShippingCost %></dd>
+                        </div>
+
+                        <div class="order-summary__row order-summary__row--rule">
+                            <dt>Total before tax</dt>
+                            <dd class="js-total-before-tax">$<%= totalBeforeTax %></dd>
+                        </div>
+
+                        <div class="order-summary__row">
+                            <dt>Estimated tax (10%)</dt>
+                            <dd class="js-estimated-tax">$<%= estimatedTax %></dd>
+                        </div>
+
+                        <div class="order-summary__row order-summary__row--total">
+                            <dt>Order total</dt>
+                            <dd class="js-order-total">$<%= orderTotal %></dd>
+                        </div>
+
+                    </dl>
+
+                    <button type="button" class="btn btn--primary btn--lg btn--block js-place-order">
+                        Place your order
+                    </button>
+
+                    <p class="order-summary__note">
+                        By placing your order you agree to the terms of this demo
+                        store. No payment is taken.
+                    </p>
+
+                </aside>
+
+            </div>
+
         <% } %>
 
-      </div>
     </div>
 
-    <!-- Order success overlay -->
-    <div class="order-success-overlay js-order-success-overlay">  
+</main>
 
-      <div class="order-success-box"> 
-          <!-- success svg checkmark -->
-        <div class="success-checkmark">
-          <svg class="success-checkmark-svg" viewBox="0 0 52 52">
-            <circle class="success-checkmark-circle" cx="26" cy="26" r="24" />    
-            <path class="success-checkmark-path" d="M14 27 L22 35 L38 18" />
-          </svg>
+<div class="overlay js-order-overlay">
+    <div class="overlay__box">
+
+        <div class="success-mark">
+            <svg viewBox="0 0 52 52" aria-hidden="true">
+                <circle class="success-mark__circle" cx="26" cy="26" r="24" />
+                <path class="success-mark__check" d="M14 27 L22 35 L38 18" />
+            </svg>
         </div>
 
-        <div class="order-success-title">
-          Order placed successfully!
-        </div>
-    
-        <div class="order-success-message">
-          Redirecting you to your orders...
-        </div>
-    
-      </div>
-    
+        <p class="overlay__title">Order placed</p>
+        <p class="overlay__message">Taking you to your orders...</p>
+
     </div>
-  </body>
-</html>
+</div>

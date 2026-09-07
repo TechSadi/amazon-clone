@@ -13,6 +13,13 @@ export const loadLogin = (req, res) => {
 
     delete req.session.authError;
 
+    // A fetch call that met an expired session sends the visitor here
+    // with where they were. `safeReturnTo` only ever yields a path on
+    // this site, so this cannot be turned into an open redirect.
+    if (req.query.returnTo) {
+        req.session.returnTo = safeReturnTo(req.query.returnTo);
+    }
+
     res.render('users/login', { error, formData: {} });
 };
 

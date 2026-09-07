@@ -1,134 +1,147 @@
-.main {
-  max-width: 850px;
-  margin-top: 90px;
-  margin-bottom: 100px;
-  padding-left: 30px;
-  padding-right: 30px;
+/* ==========================================================================
+   Package tracking
+   ========================================================================== */
 
-  /* margin-left: auto;
-     margin-right auto;
-     Is a trick for centering an element horizontally
-     without needing a container. */
-  margin-left: auto;
-  margin-right: auto;
+.tracking__back {
+    margin-bottom: var(--space-4);
 }
 
-.back-to-orders-link {
-  display: inline-block;
-  margin-bottom: 30px;
+.tracking__status {
+    margin-bottom: var(--space-2);
 }
 
-.delivery-date {
-  font-size: 25px;
-  font-weight: 700;
-  margin-bottom: 10px;
+.tracking__date {
+    font-size: var(--text-2xl);
+    letter-spacing: -0.01em;
 }
 
-.product-info {
-  margin-bottom: 3px;
+.tracking__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+    padding: var(--space-4);
+    background-color: var(--color-surface-sunken);
+    border-radius: var(--radius-md);
 }
 
-.product-image {
-  max-width: 150px;
-  max-height: 150px;
-  margin-top: 25px;
-  margin-bottom: 50px;
+.tracking__media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
+    padding: var(--space-2);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
 }
 
-.progress-labels-container {
-  display: flex;
-  justify-content: space-between;
-  font-size: 20px;
-  font-weight: 500;
-  margin-bottom: 15px;
+.tracking__media img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
-.current-status {
-  color: rgb(6, 125, 98);
+.tracking__name {
+    font-size: var(--text-md);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+}
+
+/* --------------------------------------------------------------------------
+   Progress
+   -------------------------------------------------------------------------- */
+
+.tracking__progress {
+    margin-top: var(--space-8);
+}
+
+.tracking__bar {
+    height: 8px;
+    background-color: var(--color-border);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.tracking__bar-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    background-color: var(--color-success);
+    border-radius: var(--radius-pill);
+    /* Width is set from the server-rendered value by tracking.js; the
+       transition makes it grow from zero on load rather than snap. */
+    transition: width var(--duration-slow) var(--ease);
+}
+
+.tracking__steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
+
+.tracking__step {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.tracking__step-marker {
+    width: 12px;
+    height: 12px;
+    margin-bottom: var(--space-1);
+    background-color: var(--color-border);
+    border-radius: 50%;
+}
+
+.tracking__step.is-complete .tracking__step-marker {
+    background-color: var(--color-success);
+}
+
+.tracking__step.is-current .tracking__step-marker {
+    box-shadow: 0 0 0 4px var(--color-success-surface);
+}
+
+.tracking__step-label {
+    color: var(--color-ink);
+    font-size: var(--text-base);
+    font-weight: var(--weight-bold);
+}
+
+.tracking__step.is-complete .tracking__step-label {
+    color: var(--color-success);
+}
+
+.tracking__step-caption {
+    line-height: var(--leading-snug);
 }
 
 @media (max-width: 575px) {
-  .progress-labels-container {
-    font-size: 16px;
-  }
-}
+    .tracking__date {
+        font-size: var(--text-xl);
+    }
 
-@media (max-width: 450px) {
-  .progress-labels-container {
-    flex-direction: column;
-    margin-bottom: 5px;
-  }
+    /* Three columns of caption text is unreadable at this width; the
+       steps become a vertical list instead. */
+    .tracking__steps {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+    }
 
-  .progress-label {
-    margin-bottom: 3px;
-  }
-}
+    .tracking__step {
+        display: grid;
+        grid-template-columns: 12px 1fr;
+        column-gap: var(--space-3);
+        align-items: center;
+    }
 
-.progress-bar-container {
-  height: 25px;
-  width: 100%;
-
-  border: 1px solid rgb(200, 200, 200);
-  border-radius: 50px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 100%;
-  background-color: green;
-  border-radius: 50px;
-  width: 50%;
-}
-
-.products-button {
-  background-color: #efecec;
-  border: none;
-  border-radius: 20px;
-  padding: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  margin-bottom: 20px;
-}
-
-.products-button:hover {
-  background-color: #bab7b7;
-}
-
-
-
-/* Logged in user section */
-
-.amazon-header-right-section {
-  width: 300px;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.account-link {
-  color: white;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 85px;
-  padding: 6px;
-  white-space: nowrap;
-}
-
-.account-action-button {
-  background: none;
-  border: none;
-  padding: 0;
-  color: white;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: left;
-}
-
-.account-action-button:hover {
-  text-decoration: underline;
+    .tracking__step-marker {
+        grid-row: 1 / span 2;
+        margin-bottom: 0;
+    }
 }

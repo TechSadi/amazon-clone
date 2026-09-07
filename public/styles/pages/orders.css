@@ -1,325 +1,162 @@
-.main {
-  max-width: 850px;
-  margin-top: 90px;
-  margin-bottom: 100px;
-  padding-left: 20px;
-  padding-right: 20px;
+/* ==========================================================================
+   Orders
+   ========================================================================== */
 
-  /* margin-left: auto;
-     margin-right auto;
-     Is a trick for centering an element horizontally
-     without needing a container. */
-  margin-left: auto;
-  margin-right: auto;
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
 }
 
-.page-title {
-  font-weight: 700;
-  font-size: 26px;
-  margin-bottom: 25px;
+.order__header {
+    align-items: flex-start;
 }
 
-.orders-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  row-gap: 50px;
+.order__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-8);
+    font-size: var(--text-sm);
 }
 
-.order-header {
-  background-color: rgb(240, 242, 242);
-  border: 1px solid rgb(213, 217, 217);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 20px 25px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+.order__facts--end {
+    text-align: right;
 }
 
-.order-header-left-section {
-  display: flex;
-  flex-shrink: 0;
+.order__fact dt {
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
-.order-header-label {
-  font-weight: 500;
+.order__fact dd {
+    margin: 0;
+    font-size: var(--text-base);
 }
 
-.order-date,
-.order-total {
-  margin-right: 45px;
+.order__id {
+    font-variant-numeric: tabular-nums;
+    /* An ObjectId is long; let it wrap rather than widen the card. */
+    word-break: break-all;
 }
 
-.order-header-right-section {
-  flex-shrink: 1;
+.order__items {
+    padding: var(--space-2) var(--space-5);
+}
+
+.order-item {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) 200px;
+    gap: var(--space-5);
+    align-items: start;
+    padding: var(--space-5) 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.order-item:last-child {
+    border-bottom: 0;
+}
+
+.order-item__media {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.order-item__media img {
+    max-width: 100%;
+    max-height: 110px;
+    object-fit: contain;
+}
+
+.order-item__details {
+    min-width: 0;
+}
+
+.order-item__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    font-size: var(--text-base);
+}
+
+.order-item__title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+}
+
+.order-item__title a {
+    color: var(--color-ink);
+}
+
+.order-item__title a:hover {
+    color: var(--color-link-hover);
+    text-decoration: none;
+}
+
+.order-item__quantity {
+    margin-top: var(--space-1);
+    font-size: var(--text-base);
+}
+
+.order-item__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 800px) {
+    .order-item {
+        grid-template-columns: 84px minmax(0, 1fr);
+        gap: var(--space-4);
+    }
+
+    /* The two buttons move under the details rather than squeezing a
+       third column into a phone-width card. */
+    .order-item__actions {
+        grid-column: 2;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .order-item__actions .btn {
+        flex: 1 1 140px;
+    }
 }
 
 @media (max-width: 575px) {
-  .order-header {
-    flex-direction: column;
-    align-items: start;
-    line-height: 23px;
-    padding: 15px;
-  }
+    .order__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-4);
+    }
 
-  .order-header-left-section {
-    flex-direction: column;
-  }
+    .order__facts--end {
+        text-align: left;
+    }
 
-  .order-header-label {
-    margin-right: 5px;
-  }
+    .order__items {
+        padding: var(--space-1) var(--space-4);
+    }
 
-  .order-date,
-  .order-total {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    margin-right: 0;
-  }
+    .order-item {
+        grid-template-columns: 72px minmax(0, 1fr);
+    }
 
-  .order-header-right-section {
-    display: grid;
-    grid-template-columns: auto 1fr;
-  }
-}
+    .order-item__media img {
+        max-height: 80px;
+    }
 
-.order-details-grid {
-  padding: 40px 25px;
-  border: 1px solid rgb(213, 217, 217);
-  border-top: none;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-
-  display: grid;
-  grid-template-columns: 110px 1fr 220px;
-  column-gap: 35px;
-  row-gap: 60px;
-  align-items: center;
-}
-
-@media (max-width: 800px) {
-  .order-details-grid {
-    grid-template-columns: 110px 1fr;
-    row-gap: 0;
-    padding-bottom: 8px;
-  }
-}
-
-@media (max-width: 450px) {
-  .order-details-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.product-image-container {
-  text-align: center;
-}
-
-.product-image-container img {
-  max-width: 110px;
-  max-height: 110px;
-}
-
-.product-name {
-  font-weight: 700;
-  margin-bottom: 5px;
-}
-
-.product-delivery-date {
-  margin-bottom: 3px;
-}
-
-.product-quantity {
-  margin-bottom: 8px;
-}
-
-.buy-again-button {
-  font-size: 15px;
-  width: 140px;
-  height: 36px;
-  border-radius: 8px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.buy-again-icon {
-  width: 25px;
-  margin-right: 15px;
-}
-
-.product-actions {
-  align-self: start;
-}
-
-.track-package-button {
-  width: 100%;
-  font-size: 15px;
-  padding: 8px;
-}
-
-@media (max-width: 800px) {
-  .buy-again-button {
-    margin-bottom: 10px;
-  }
-
-  .product-actions {
-    /* grid-column: 2 means this element will be placed
-       in column 2 in the grid. (Normally, the column that
-       an element is placed in is determined by the order
-       of the elements in the HTML. grid-column overrides
-       this default ordering). */
-    grid-column: 2;
-    margin-bottom: 30px;
-  }
-
-  .track-package-button {
-    width: 140px;
-  }
-}
-
-@media (max-width: 450px) {
-  .product-image-container {
-    text-align: center;
-    margin-bottom: 25px;
-  }
-
-  .product-image-container img {
-    max-width: 150px;
-    max-height: 150px;
-  }
-
-  .product-name {
-    margin-bottom: 10px;
-  }
-
-  .product-quantity {
-    margin-bottom: 15px;
-  }
-
-  .buy-again-button {
-    width: 100%;
-    margin-bottom: 15px;
-  }
-
-  .product-actions {
-    /* grid-column: auto; undos grid-column: 2; from above.
-       This element will now be placed in its normal column
-       in the grid. */
-    grid-column: auto;
-    margin-bottom: 70px;
-  }
-
-  .track-package-button {
-    width: 100%;
-    padding: 12px;
-  }
-}
-
-
-.buy-it-again-button {
-  text-decoration: none;
-}
-
-.products-button {
-  background-color: #e4e2e2;
-  border: none;
-  border-radius: 20px;
-  padding: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  margin: 0 10px;
-}
-
-.products-button:hover {
-  background-color: #bab7b7;
-}
-
-.order-page-header {
-  display: flex;
-  flex-direction:row;
-  /* justify-content: space-between */
-}
-
-.products-button {
-  margin-left: 80px;
-}
-
-
-
-
-
-/* Logged in user section */
-
-.amazon-header-right-section {
-  width: 300px;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.account-link {
-  color: white;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 85px;
-  padding: 6px;
-  white-space: nowrap;
-}
-
-.account-action-button {
-  background: none;
-  border: none;
-  padding: 0;
-  color: white;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: left;
-}
-
-.account-action-button:hover {
-  text-decoration: underline;
-}
-/* Empty orders state */
-.orders-empty {
-  padding: 40px 24px;
-  background-color: #ffffff;
-  border: 1px solid #d5d9d9;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.orders-empty-title {
-  margin: 0;
-  font-size: 20px;
-  color: #0f1111;
-}
-
-.orders-empty-message {
-  margin: 8px 0 20px;
-  font-size: 14px;
-  color: #565959;
-}
-
-.orders-empty-link {
-  display: inline-block;
-  padding: 9px 20px;
-  background-color: #ffd814;
-  border: 1px solid #fcd200;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #0f1111;
-  text-decoration: none;
-}
-
-.orders-empty-link:hover {
-  background-color: #f7ca00;
+    .order-item__actions {
+        grid-column: 1 / -1;
+    }
 }

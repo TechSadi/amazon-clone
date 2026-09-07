@@ -1,0 +1,333 @@
+/* ==========================================================================
+   Checkout
+   ========================================================================== */
+
+.checkout-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--space-5);
+    align-items: start;
+}
+
+/* --------------------------------------------------------------------------
+   Items under review
+   -------------------------------------------------------------------------- */
+
+.checkout-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.checkout-item {
+    padding: var(--space-5);
+    transition: opacity var(--duration) var(--ease);
+}
+
+.checkout-item.is-busy {
+    opacity: 0.6;
+}
+
+.checkout-item__eta {
+    margin-bottom: var(--space-4);
+    color: var(--color-success);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+}
+
+.checkout-item__grid {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+}
+
+.checkout-item__media {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.checkout-item__media img {
+    max-width: 100%;
+    max-height: 120px;
+    object-fit: contain;
+}
+
+.checkout-item__details {
+    min-width: 0;
+}
+
+.checkout-item__title {
+    font-size: var(--text-md);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-snug);
+}
+
+.checkout-item__title a {
+    color: var(--color-ink);
+}
+
+.checkout-item__title a:hover {
+    color: var(--color-link-hover);
+    text-decoration: none;
+}
+
+.checkout-item__price {
+    margin-top: var(--space-2);
+    font-size: var(--text-lg);
+}
+
+.checkout-item__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+/* --------------------------------------------------------------------------
+   Delivery options
+
+   A real fieldset of radios: the whole card is the label, so the target
+   is the full row rather than the 13px circle it used to be.
+   -------------------------------------------------------------------------- */
+
+.delivery-options {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.delivery-options__title {
+    padding: 0;
+    margin-bottom: var(--space-3);
+    font-size: var(--text-base);
+    font-weight: var(--weight-bold);
+}
+
+.delivery-option {
+    position: relative;
+}
+
+.delivery-option + .delivery-option {
+    margin-top: var(--space-2);
+}
+
+/* Kept in the accessibility tree and in the tab order; the label draws
+   the visible control. */
+.delivery-option__input {
+    position: absolute;
+    top: 50%;
+    left: var(--space-3);
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    transform: translateY(-50%);
+    accent-color: var(--color-amber);
+}
+
+.delivery-option__label {
+    display: block;
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease),
+        background-color var(--duration-fast) var(--ease);
+}
+
+.delivery-option__label:hover {
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-border-strong);
+}
+
+.delivery-option__input:checked + .delivery-option__label {
+    border-color: var(--color-amber);
+    box-shadow: inset 0 0 0 1px var(--color-amber);
+}
+
+.delivery-option__input:focus-visible + .delivery-option__label {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.delivery-option__date {
+    display: block;
+    color: var(--color-success);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+}
+
+.delivery-option__price {
+    display: block;
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+/* --------------------------------------------------------------------------
+   Order summary
+   -------------------------------------------------------------------------- */
+
+.order-summary {
+    position: sticky;
+    top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.order-summary__title {
+    font-size: var(--text-lg);
+}
+
+.order-summary__rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.order-summary__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-size: var(--text-base);
+}
+
+.order-summary__row dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.order-summary__row--rule {
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border-subtle);
+}
+
+.order-summary__row--total {
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-price);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+}
+
+.order-summary__note {
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-snug);
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Success mark
+   -------------------------------------------------------------------------- */
+
+.success-mark {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-color: var(--color-success);
+    transform: scale(0);
+}
+
+.overlay.is-active .success-mark {
+    animation: success-pop 420ms var(--ease) forwards;
+}
+
+.success-mark svg {
+    width: 100%;
+    height: 100%;
+}
+
+.success-mark__circle {
+    fill: none;
+}
+
+.success-mark__check {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 40;
+    stroke-dashoffset: 40;
+}
+
+.overlay.is-active .success-mark__check {
+    animation: success-draw 320ms var(--ease) 380ms forwards;
+}
+
+@keyframes success-pop {
+    0% {
+        transform: scale(0);
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes success-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* The confirmation must still read as confirmed with motion switched
+   off, so both states land on their finished values. */
+@media (prefers-reduced-motion: reduce) {
+    .success-mark {
+        transform: scale(1);
+    }
+
+    .success-mark__check {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1000px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* The total leads on a narrow screen: it is what the visitor is
+       about to commit to. */
+    .order-summary {
+        position: static;
+        order: -1;
+    }
+
+    .checkout-item__grid {
+        grid-template-columns: 100px minmax(0, 1fr);
+    }
+
+    .delivery-options {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 575px) {
+    .checkout-item {
+        padding: var(--space-4);
+    }
+
+    .checkout-item__grid {
+        grid-template-columns: 80px minmax(0, 1fr);
+        gap: var(--space-4);
+    }
+
+    .checkout-item__eta {
+        font-size: var(--text-md);
+    }
+}

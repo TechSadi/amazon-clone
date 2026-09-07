@@ -1,0 +1,56 @@
+<footer class="site-footer">
+
+    <a class="site-footer__top" href="#top">Back to top</a>
+
+    <div class="site-footer__inner">
+
+        <div>
+            <h2 class="site-footer__heading">Get to know us</h2>
+            <ul class="site-footer__list">
+                <li><a href="/products">About the store</a></li>
+                <li><a href="/products">Careers</a></li>
+                <li><a href="/products">Press releases</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h2 class="site-footer__heading">Shop with us</h2>
+            <ul class="site-footer__list">
+                <li><a href="/products">All products</a></li>
+                <li><a href="/cart">Your cart</a></li>
+                <li><a href="/orders">Your orders</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h2 class="site-footer__heading">Let us help you</h2>
+            <ul class="site-footer__list">
+                <li><a href="/orders">Track a package</a></li>
+                <li><a href="/products">Returns &amp; replacements</a></li>
+                <li><a href="/products">Help centre</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h2 class="site-footer__heading">Account</h2>
+            <ul class="site-footer__list">
+                <% if (currentUser) { %>
+                    <li><a href="/orders">Your account</a></li>
+                    <li><a href="/cart">Your cart</a></li>
+                <% } else { %>
+                    <li><a href="/users/login">Sign in</a></li>
+                    <li><a href="/users/register">Create an account</a></li>
+                <% } %>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="site-footer__bottom">
+        <p>
+            A learning project built with Express, EJS and MongoDB. Not
+            affiliated with Amazon.
+        </p>
+    </div>
+
+</footer>

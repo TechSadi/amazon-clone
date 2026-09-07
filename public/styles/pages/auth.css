@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Sign in and sign up
+   ========================================================================== */
+
+.auth-page {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--space-10);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-sm);
+}
+
+.auth-card__header {
+    margin-bottom: var(--space-6);
+}
+
+.auth-card__header h1 {
+    margin-bottom: var(--space-1);
+    font-size: var(--text-2xl);
+}
+
+.auth-card__forgot {
+    font-size: var(--text-sm);
+}
+
+.auth-card__terms {
+    margin-top: var(--space-4);
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-normal);
+}
+
+/* --------------------------------------------------------------------------
+   Password strength
+   -------------------------------------------------------------------------- */
+
+.strength {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+}
+
+.strength__track {
+    flex: 1;
+    height: 4px;
+    background-color: var(--color-border);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.strength__fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: var(--radius-pill);
+    transition: width var(--duration) var(--ease),
+        background-color var(--duration) var(--ease);
+}
+
+.strength__label {
+    min-width: 3.5rem;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    text-align: right;
+}
+
+.strength[data-level="0"] .strength__fill {
+    width: 33%;
+    background-color: var(--color-danger);
+}
+
+.strength[data-level="0"] .strength__label {
+    color: var(--color-danger);
+}
+
+.strength[data-level="1"] .strength__fill {
+    width: 66%;
+    background-color: var(--color-warning);
+}
+
+.strength[data-level="1"] .strength__label {
+    color: var(--color-warning);
+}
+
+.strength[data-level="2"] .strength__fill {
+    width: 100%;
+    background-color: var(--color-success);
+}
+
+.strength[data-level="2"] .strength__label {
+    color: var(--color-success);
+}
+
+/* --------------------------------------------------------------------------
+   Dividers and social sign-in
+   -------------------------------------------------------------------------- */
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-6) 0 var(--space-4);
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--color-border);
+}
+
+.social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.social-button__icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Switch between sign in and sign up
+   -------------------------------------------------------------------------- */
+
+.auth-card__switch {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border-subtle);
+    color: var(--color-ink-muted);
+    font-size: var(--text-base);
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .auth-page {
+        padding-top: var(--space-5);
+    }
+
+    .auth-card {
+        padding: var(--space-5);
+    }
+}

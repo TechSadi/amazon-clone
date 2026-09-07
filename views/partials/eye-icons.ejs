@@ -1,0 +1,14 @@
+<%#
+  The two states of the password-visibility toggle. auth-form.js swaps
+  which one is hidden; keeping both in the markup means the icon never
+  has to be built in script.
+%>
+<svg class="js-eye-show" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" />
+    <circle cx="12" cy="12" r="3" />
+</svg>
+
+<svg class="js-eye-hide" viewBox="0 0 24 24" aria-hidden="true" hidden>
+    <path d="M2 12s3.5-6 10-6c1.6 0 3 .3 4.3.8M22 12s-3.5 6-10 6c-1.6 0-3-.3-4.3-.8" />
+    <path d="M4 4l16 16" />
+</svg>

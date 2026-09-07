@@ -1,349 +1,212 @@
-<!DOCTYPE html>
-<html lang="en">
+<% layout('layouts/base') %>
+<% block('title', 'Shopping cart') %>
+<% block('styles', '<link rel="stylesheet" href="/styles/pages/cart.css">') %>
+<% block('scripts', '<script src="/scripts/cart.js" defer></script>') %>
 
-<head>
-    <title>Amazon Project</title>
+<% const items = cart && cart.items ? cart.items : []; %>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <meta name="csrf-token" content="<%= csrfToken %>">
+<main class="page" id="main">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <div class="container">
 
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+        <% if (items.length === 0) { %>
 
-    <link rel="stylesheet" href="/styles/shared/general.css">
-    <link rel="stylesheet" href="/styles/shared/amazon-header.css">
-    <link rel="stylesheet" href="/styles/pages/amazon.css">
-    <link rel="stylesheet" href="/styles/pages/notfound.css">
-    <link rel="stylesheet" href="/styles/pages/cart.css">
+            <div class="card">
+                <div class="empty-state">
 
-    <script src="/scripts/http.js" defer></script>
-    <script src="/scripts/index.js" defer></script>
-    <script src="/scripts/cart.js" defer></script>
-</head>
-
-<body>
-
-    <!-- Header -->
-    <div class="amazon-header">
-
-        <div class="amazon-header-left-section">
-
-            <a href="/products" class="header-link">
-
-                <img class="amazon-logo" src="/images/amazon-logo-white.png">
-
-                <img class="amazon-mobile-logo" src="/images/amazon-mobile-logo-white.png">
-
-            </a>
-
-        </div>
-
-
-        <div class="amazon-header-middle-section">
-
-            <form class="search-form" action="/products" method="GET">
-
-                <input class="search-bar js-search-bar" name="q" type="text" placeholder="Search">
-
-                <button class="search-button js-search-button" type="submit">
-
-                    <img class="search-icon" src="/images/icons/search-icon.png">
-
-                </button>
-
-            </form>
-
-        </div>
-
-
-        <div class="amazon-header-right-section">
-        
-            <% if (currentUser) { %>
-        
-                <div class="account-link header-link">
-        
-                    <span class="returns-text">
-                        Hello, <%= currentUser.name %>
+                    <span class="empty-state__art">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2.5 4h2.4l2.2 10.6a1.7 1.7 0 0 0 1.7 1.4h8.4a1.7 1.7 0 0 0 1.6-1.3L20.5 8H6" />
+                            <circle cx="9.5" cy="19.5" r="1.5" />
+                            <circle cx="17" cy="19.5" r="1.5" />
+                        </svg>
                     </span>
-        
-                    <form action="/users/logout" method="POST" class="js-logout-form">
-<input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <button type="submit" class="account-action-button">
-                            Sign out
-                        </button>
-                    </form>
-        
-                </div>
-        
-                <% } else { %>
-        
-                    <a class="account-link header-link" href="/users/login">
-        
-                        <span class="returns-text">
-                            Hello, Guest
-                        </span>
-        
-                        <span class="orders-text">
-                            Sign in
-                        </span>
-        
-                    </a>
-        
-                    <% } %>
-        
-        
-                        <a class="orders-link header-link" href="/orders">
-                            <span class="returns-text">
-                                Returns
-                            </span>
-        
-                            <span class="orders-text">
-                                & Orders
-                            </span>
-                        </a>
-        
-        
-                        <a class="cart-link header-link" href="/cart">
-        
-                            <img class="cart-icon" src="/images/icons/cart-icon.png">
-        
-                            <div class="cart-quantity js-cart-quantity">
-                                <%= cartQuantity %>
-                            </div>
-        
-                            <div class="cart-text">
-                                Cart
-                            </div>
-        
-                        </a>
-        
-        </div>
 
-    </div>
+                    <h1 class="empty-state__title">Your cart is empty</h1>
 
-
-    <!-- Cart Page -->
-    <div class="cart-page">
-
-        <div class="cart-container">
-
-            <!-- Empty Cart -->
-            <% if (!cart || cart.items.length===0) { %>
-
-                <div class="cart-items-section">
-
-                    <h1 class="cart-title">
-                        Shopping Cart
-                    </h1>
-
-                    <p class="empty-cart-message">
-                        Your Amazon Cart is empty.
+                    <p class="empty-state__message">
+                        Nothing here yet. Browse the store and anything you add
+                        will show up on this page.
                     </p>
-                    <a href="/products">
-                        <button class="go-to-products">
-                            Go to products
-                        </button>
-                    </a>
+
+                    <div class="empty-state__actions">
+                        <a class="btn btn--primary" href="/products">
+                            Start shopping
+                        </a>
+
+                        <a class="btn btn--secondary" href="/orders">
+                            View your orders
+                        </a>
+                    </div>
 
                 </div>
+            </div>
 
+        <% } else { %>
 
-                <!-- Cart Has Items -->
-                <% } else { %>
+            <div class="cart-layout">
 
-                    <div class="cart-items-section">
+                <section class="card cart-items" aria-labelledby="cart-heading">
 
-                        <h1 class="cart-title">
-                            Shopping Cart
-                        </h1>
+                    <div class="cart-items__head">
+                        <h1 class="page-title" id="cart-heading">Shopping cart</h1>
 
+                        <p class="cart-items__count text-muted">
+                            <span class="js-cart-label">
+                                <%= cartQuantity === 1 ? '1 item' : cartQuantity + ' items' %>
+                            </span>
+                        </p>
+                    </div>
 
-                            <% cart.items.forEach((item)=> { %>
+                    <ul class="cart-items__list js-cart-list" data-max-quantity="<%= maxItemQuantity %>">
 
-                                    <div class="cart-item js-cart-item-<%= item.product._id %>">
+                        <% items.forEach((item) => { %>
 
-                                        <div class="cart-item-image-container">
+                            <%
+                                const productId = item.product._id;
+                                const unitPrice = (item.product.priceCents / 100).toFixed(2);
+                                const linePrice = (
+                                    (item.product.priceCents * item.quantity) / 100
+                                ).toFixed(2);
+                            %>
 
-                                            <img src="<%= item.product.image %>" alt="<%= item.product.name %>"
-                                                class="cart-item-image">
+                            <li class="cart-item js-cart-item" data-product-id="<%= productId %>">
 
+                                <a class="cart-item__media" href="/products/<%= productId %>" tabindex="-1" aria-hidden="true">
+                                    <img
+                                        src="/<%= item.product.image %>"
+                                        alt=""
+                                        loading="lazy"
+                                        decoding="async"
+                                    >
+                                </a>
+
+                                <div class="cart-item__body">
+
+                                    <div class="cart-item__head">
+                                        <h2 class="cart-item__title">
+                                            <a href="/products/<%= productId %>">
+                                                <span class="clamp-2"><%= item.product.name %></span>
+                                            </a>
+                                        </h2>
+
+                                        <p class="price cart-item__price js-item-price" data-product-id="<%= productId %>">
+                                            $<%= linePrice %>
+                                        </p>
+                                    </div>
+
+                                    <p class="cart-item__meta">
+                                        <span class="badge badge--success">In stock</span>
+                                        <span class="text-muted">$<%= unitPrice %> each</span>
+                                    </p>
+
+                                    <div class="cart-item__actions">
+
+                                        <div class="stepper js-stepper" data-product-id="<%= productId %>">
+                                            <button
+                                                type="button"
+                                                class="stepper__button js-decrease"
+                                                data-product-id="<%= productId %>"
+                                                <%= item.quantity <= 1 ? 'disabled' : '' %>
+                                            >
+                                                <span aria-hidden="true">&minus;</span>
+                                                <span class="visually-hidden">
+                                                    Decrease quantity of <%= item.product.name %>
+                                                </span>
+                                            </button>
+
+                                            <span
+                                                class="stepper__value js-quantity"
+                                                data-product-id="<%= productId %>"
+                                                role="status"
+                                            ><%= item.quantity %></span>
+
+                                            <button
+                                                type="button"
+                                                class="stepper__button js-increase"
+                                                data-product-id="<%= productId %>"
+                                                <%= item.quantity >= maxItemQuantity ? 'disabled' : '' %>
+                                            >
+                                                <span aria-hidden="true">+</span>
+                                                <span class="visually-hidden">
+                                                    Increase quantity of <%= item.product.name %>
+                                                </span>
+                                            </button>
                                         </div>
 
-
-                                        <div class="cart-item-details">
-
-                                            <div class="cart-item-info">
-
-                                                <div>
-
-                                                    <h2 class="cart-item-name">
-                                                        <%= item.product.name %>
-                                                    </h2>
-
-                                                    <p class="stock-status">
-                                                        In Stock
-                                                    </p>
-
-                                                </div>
-
-
-                                                <div class="cart-item-price">
-
-                                                    $
-                                                    <%= ( item.product.priceCents / 100 ).toFixed(2) %>
-
-                                                </div>
-
-                                            </div>
-
-
-                                            <div class="cart-item-actions">
-
-                                                <!-- Quantity Selector -->
-
-                                                <div class="quantity-selector">
-
-                                                    <button class="quantity-button decrease-button js-decrease-button"
-                                                        data-product-id="<%= item.product._id %>">
-                                                        −
-                                                    </button>
-
-
-                                                    <span class="quantity js-quantity-<%= item.product._id %>">
-                                                        <%= item.quantity %>
-                                                    </span>
-
-
-                                                    <button class="quantity-button increase-button js-increase-button"
-                                                        data-product-id="<%= item.product._id %>">
-                                                        +
-                                                    </button>
-
-                                                </div>
-
-
-                                                <button class="delete-button js-delete-button"
-                                                    data-product-id="<%= item.product._id %>">
-                                                    Delete
-                                                </button>
-
-                                            </div>
-
-                                        </div>
+                                        <button
+                                            type="button"
+                                            class="btn btn--sm btn--danger js-remove-item"
+                                            data-product-id="<%= productId %>"
+                                            data-product-name="<%= item.product.name %>"
+                                        >
+                                            <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M4 7h16M9.5 7V5h5v2M6.5 7l1 12.5h9l1-12.5" />
+                                            </svg>
+                                            Remove
+                                        </button>
 
                                     </div>
 
-                                    <% }); %>
+                                </div>
 
+                            </li>
 
-                                        <!-- Subtotal -->
+                        <% }) %>
 
-                                        <div class="cart-subtotal">
+                    </ul>
 
-                                            Subtotal (
+                    <p class="cart-items__subtotal">
+                        Subtotal
+                        (<span class="js-cart-label"><%= cartQuantity === 1 ? '1 item' : cartQuantity + ' items' %></span>):
+                        <strong class="price">$<span class="js-subtotal"><%= subtotal %></span></strong>
+                    </p>
 
-                                            <span class="js-bottom-cart-quantity">
-                                                <%= cartQuantity %>
-                                            </span>
+                </section>
 
-                                            items):
+                <aside class="card card--padded cart-summary" aria-label="Order summary">
 
-                                                <strong>
+                    <p class="cart-summary__subtotal">
+                        Subtotal
+                        (<span class="js-cart-label"><%= cartQuantity === 1 ? '1 item' : cartQuantity + ' items' %></span>):
+                        <strong class="price price--lg">$<span class="js-subtotal"><%= subtotal %></span></strong>
+                    </p>
 
-                                                    $
+                    <p class="cart-summary__note">
+                        Shipping and tax are calculated at checkout.
+                    </p>
 
-                                                    <span class="js-bottom-subtotal">
-                                                        <%= subtotal %>
-                                                    </span>
+                    <button type="button" class="btn btn--primary btn--lg btn--block js-checkout-button">
+                        Proceed to checkout
+                    </button>
 
-                                                </strong>
+                    <a class="btn btn--secondary btn--block" href="/products">
+                        Continue shopping
+                    </a>
 
-                                        </div>
+                    <p class="cart-summary__secure">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="10.5" width="14" height="9.5" rx="2" />
+                            <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3" />
+                        </svg>
+                        Secure checkout
+                    </p>
 
-                    </div>
+                </aside>
 
+            </div>
 
-                    <!-- Checkout Section -->
-
-                    <div class="checkout-section">
-
-                        <div class="checkout-summary">
-
-                            <div class="checkout-subtotal">
-
-                                Subtotal (
-
-                                <span class="js-right-cart-quantity">
-                                    <%= cartQuantity %>
-                                </span>
-
-                                items):
-
-                                <strong>
-
-                                    $
-
-                                    <span class="js-right-subtotal">
-                                        <%= subtotal %>
-                                    </span>
-
-                                </strong>
-
-                            </div>
-
-                                <button class="checkout-button js-checkout-button">
-                                    Proceed to checkout
-                                </button>
-
-
-                            <a href="/products">
-
-                                <button class="products-button">
-                                    Add more products
-                                </button>
-
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                    <% } %>
-
-        </div>
+        <% } %>
 
     </div>
 
+</main>
 
-    <!-- Cart Toast -->
-    <div class="cart-toast js-cart-toast">
-        <span class="js-cart-toast-message"></span>
-        
-        <button class="undo-button js-undo-button">Undo</button>
+<!-- Shown only after the visitor commits to leaving for checkout. -->
+<div class="overlay js-checkout-overlay">
+    <div class="overlay__box">
+        <div class="spinner spinner--lg"></div>
+        <p class="overlay__title">Opening checkout</p>
+        <p class="overlay__message">One moment...</p>
     </div>
-
-    <!-- Checkout loading overlay -->
-    <div class="checkout-loading-overlay js-checkout-loading-overlay">
-    
-        <div class="checkout-loading-box">
-    
-            <div class="checkout-spinner"></div>
-    
-            <h2 class="checkout-loading-title">
-                Preparing your checkout
-            </h2>
-    
-            <p class="checkout-loading-message">
-                Just a moment...
-            </p>
-    
-        </div>
-    
-    </div>
-
-</body>
-
-</html>
+</div>

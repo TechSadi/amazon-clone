@@ -1,0 +1,161 @@
+/* ==========================================================================
+   Product listing
+   ========================================================================== */
+
+/* One auto-filling track definition replaces the seven fixed-column
+   breakpoints the grid used to need, and it never leaves a card stranded
+   at an awkward width. */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-4);
+}
+
+@media (max-width: 400px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: box-shadow var(--duration) var(--ease),
+        border-color var(--duration) var(--ease),
+        transform var(--duration) var(--ease);
+}
+
+.product-card:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* A fixed aspect ratio is what keeps the row of cards aligned no matter
+   how tall or wide the source image is.
+
+   `min-height: 0` matters: as a flex item this box would otherwise be
+   floored at its content's intrinsic height, and a tall product photo
+   would stretch it past the square, throwing the row out of alignment. */
+.product-card__media {
+    display: block;
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+    padding: var(--space-5);
+    background-color: var(--color-surface);
+}
+
+.product-card__image {
+    width: 100%;
+    height: 100%;
+    /* Letterboxes inside the square rather than distorting or escaping. */
+    object-fit: contain;
+    transition: transform var(--duration-slow) var(--ease);
+}
+
+.product-card:hover .product-card__image {
+    transform: scale(1.04);
+}
+
+.product-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-top: 1px solid var(--color-border-subtle);
+}
+
+.product-card__title {
+    /* Two lines of 15px text. Reserving the space means a one-line name
+       and a two-line name produce cards of exactly the same height. */
+    min-height: calc(2 * var(--text-md) * var(--leading-snug));
+    font-size: var(--text-md);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-snug);
+}
+
+.product-card__link {
+    color: var(--color-ink);
+}
+
+.product-card__link:hover {
+    color: var(--color-link-hover);
+    text-decoration: none;
+}
+
+.product-card__price {
+    font-size: var(--text-xl);
+}
+
+/* Pushes the actions to the bottom edge of every card in the row. */
+.product-card__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: auto;
+    padding-top: var(--space-2);
+}
+
+.product-card__quantity {
+    width: 64px;
+    flex-shrink: 0;
+    padding-right: var(--space-5);
+}
+
+/* The label must not wrap: a two-line "Add to / cart" makes the button
+   taller than its neighbours and breaks the row. */
+.product-card__add {
+    flex: 1;
+    min-width: 0;
+    padding-inline: var(--space-3);
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   No-results state
+   -------------------------------------------------------------------------- */
+
+.suggested-terms {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border-subtle);
+    width: 100%;
+    max-width: 34rem;
+}
+
+.suggested-terms__label {
+    margin-bottom: var(--space-3);
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.suggested-terms__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.suggested-terms__chip {
+    display: inline-block;
+    padding: var(--space-2) var(--space-4);
+    background-color: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-ink);
+    font-size: var(--text-base);
+}
+
+.suggested-terms__chip:hover {
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-border-strong);
+    color: var(--color-ink);
+    text-decoration: none;
+}

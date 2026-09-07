@@ -85,7 +85,11 @@ export async function listOrdersForUser(userId) {
         .sort({ createdAt: -1 })
         .lean();
 
-    return orders.map(toOrderView);
+    // One clock for the whole list, and `map`'s index never reaches
+    // toOrderView's second parameter.
+    const now = new Date();
+
+    return orders.map((order) => toOrderView(order, now));
 }
 
 /**
@@ -137,18 +141,27 @@ export function calculateDeliveryProgress(order, item, now = new Date()) {
     return Math.min(100, Math.max(0, Math.round(percent)));
 }
 
-function toOrderView(order) {
+function toOrderView(order, now = new Date()) {
     return {
         id: String(order._id),
-        placedOnLabel: dayjs(order.createdAt).format('MMMM D'),
+        placedOnLabel: dayjs(order.createdAt).format('MMMM D, YYYY'),
         totalLabel: formatCurrency(order.totalPriceCents),
+        itemCount: order.items.reduce(
+            (total, item) => total + item.quantity,
+            0
+        ),
 
         items: order.items.map((item) => ({
             productId: String(item.product),
             name: item.name,
             image: item.image,
             quantity: item.quantity,
-            deliveryDateLabel: formatDeliveryDate(item.estimatedDeliveryDate)
+            deliveryDateLabel: formatDeliveryDate(item.estimatedDeliveryDate),
+            // Lets the orders list show where each package actually is,
+            // rather than labelling every order the same way.
+            isDelivered:
+                new Date(item.estimatedDeliveryDate).getTime() <=
+                now.getTime()
         }))
     };
 }

@@ -1,99 +1,66 @@
+/* ==========================================================================
+   Error page
+   ========================================================================== */
+
 .error-page {
-    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
-    background-color: #eaeded;
-    font-family: Roboto, Arial, sans-serif;
+    padding-top: var(--space-12);
 }
 
 .error-card {
     width: 100%;
     max-width: 520px;
-    padding: 32px;
-    background-color: #ffffff;
-    border: 1px solid #d5d9d9;
-    border-radius: 8px;
     text-align: center;
 }
 
-.error-status {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: #565959;
+.error-card__status {
+    color: var(--color-ink-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.14em;
 }
 
-.error-title {
-    margin: 8px 0 0;
-    font-size: 26px;
-    line-height: 1.25;
-    color: #0f1111;
+.error-card__title {
+    margin-top: var(--space-2);
+    font-size: var(--text-2xl);
 }
 
-.error-message {
-    margin: 12px 0 0;
-    font-size: 15px;
-    line-height: 1.5;
-    color: #565959;
+.error-card__message {
+    margin-top: var(--space-3);
+    color: var(--color-ink-muted);
+    line-height: var(--leading-normal);
 }
 
-.error-actions {
-    margin-top: 24px;
+.error-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
 }
 
-.error-button {
-    display: inline-block;
-    padding: 10px 24px;
-    background-color: #ffd814;
-    border: 1px solid #fcd200;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #0f1111;
-    text-decoration: none;
-}
-
-.error-button:hover {
-    background-color: #f7ca00;
-}
-
-.error-button:focus-visible {
-    outline: 2px solid #007185;
-    outline-offset: 2px;
-}
-
-.error-detail {
-    margin-top: 24px;
+.error-card__detail {
+    margin-top: var(--space-6);
     text-align: left;
 }
 
-.error-detail summary {
+.error-card__detail summary {
     cursor: pointer;
-    font-size: 13px;
-    color: #007185;
+    color: var(--color-link);
+    font-size: var(--text-sm);
 }
 
-.error-detail pre {
-    margin-top: 8px;
-    padding: 12px;
+.error-card__detail pre {
+    margin-top: var(--space-2);
+    padding: var(--space-3);
     overflow-x: auto;
-    background-color: #f7f8f8;
-    border: 1px solid #d5d9d9;
-    border-radius: 4px;
-    font-size: 12px;
-    line-height: 1.5;
+    background-color: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    line-height: var(--leading-normal);
     white-space: pre-wrap;
     word-break: break-word;
-}
-
-@media (max-width: 480px) {
-    .error-card {
-        padding: 24px 20px;
-    }
-
-    .error-title {
-        font-size: 22px;
-    }
 }

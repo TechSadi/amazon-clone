@@ -1,0 +1,50 @@
+<%#
+  Layout for pages where the visitor is finishing one task and nothing
+  should compete with it: checkout, sign in, sign up, and the error page.
+
+  The header is a wordmark and, when the page asks for it, a reassurance
+  line. There is no search, no category nav and no cart, so there is no
+  way to wander off mid-task.
+%>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('../partials/head') %>
+</head>
+
+<body id="top" class="focused-layout">
+
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="focused-header">
+
+        <div class="focused-header__inner">
+
+            <a class="focused-header__logo" href="/products">
+                <img src="/images/amazon-logo.png" alt="Amazon Clone home">
+                <img class="logo--mobile" src="/images/amazon-mobile-logo.png" alt="Amazon Clone home">
+            </a>
+
+            <%- block('focusedHeader') %>
+
+        </div>
+
+    </header>
+
+    <%- body %>
+
+    <div class="focused-footer">
+        <nav class="focused-footer__links" aria-label="Legal">
+            <a href="/products">Conditions of use</a>
+            <a href="/products">Privacy notice</a>
+            <a href="/products">Help</a>
+        </nav>
+        <p>A learning project. Not affiliated with Amazon.</p>
+    </div>
+
+    <%- include('../partials/toast-region') %>
+
+</body>
+
+</html>

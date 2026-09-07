@@ -15,6 +15,7 @@ import {
     getDeliveryOption
 } from '../data/deliveryOptions.js';
 import { formatCurrency } from '../utils/money.js';
+import { MAX_ITEM_QUANTITY } from '../models/cart.js';
 
 /**
  * Reads the cart back and formats every figure the order summary shows.
@@ -41,7 +42,8 @@ export const loadCheckout = async (req, res) => {
         ...snapshot,
         deliveryOptions,
         getDeliveryOption,
-        deliveryDateLabel
+        deliveryDateLabel,
+        maxItemQuantity: MAX_ITEM_QUANTITY
     });
 };
 

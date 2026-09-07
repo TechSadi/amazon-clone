@@ -1,200 +1,207 @@
 /**
  * Cart page behaviour.
  *
- * Every element lookup is guarded: most of this markup only exists when
- * the cart has something in it, and the previous version threw on an
- * empty cart before any handler was attached, which silently disabled
- * the rest of the page's scripts.
+ * Every element lookup is guarded, because most of this markup only
+ * exists when the cart has something in it.
  */
-const cartToast = document.querySelector('.js-cart-toast');
-const cartToastMessage = document.querySelector('.js-cart-toast-message');
-const undoButton = document.querySelector('.js-undo-button');
+(function () {
+    'use strict';
 
-let toastTimeout;
-let deletedItem = null;
+    var App = window.App;
 
-function setText(selector, value) {
-    const element = document.querySelector(selector);
+    /** Applies one server response to every total on the page. */
+    function applyTotals(data) {
+        App.setCartQuantity(data.cartQuantity);
 
-    if (element) {
-        element.textContent = value;
-    }
-}
-
-/** Applies one server response to every total on the page. */
-function applyCartTotals(data) {
-    window.setCartQuantity(data.cartQuantity);
-
-    setText('.js-bottom-cart-quantity', data.cartQuantity);
-    setText('.js-right-cart-quantity', data.cartQuantity);
-    setText('.js-bottom-subtotal', data.subtotal);
-    setText('.js-right-subtotal', data.subtotal);
-}
-
-function showCartToast(message) {
-    if (!cartToast || !cartToastMessage) {
-        return;
+        App.$$('.js-subtotal').forEach(function (element) {
+            element.textContent = data.subtotal;
+        });
     }
 
-    clearTimeout(toastTimeout);
-
-    if (undoButton) {
-        undoButton.disabled = false;
+    function itemRow(productId) {
+        return App.$('.js-cart-item[data-product-id="' + productId + '"]');
     }
 
-    cartToastMessage.textContent = message;
-    cartToast.classList.add('show');
+    function inRow(productId, selector) {
+        var row = itemRow(productId);
 
-    toastTimeout = setTimeout(() => {
-        cartToast.classList.remove('show');
-        deletedItem = null;
-    }, 5000);
-}
-
-function hideCartToast() {
-    clearTimeout(toastTimeout);
-
-    if (cartToast) {
-        cartToast.classList.remove('show');
+        return row ? App.$$(selector, row) : [];
     }
 
-    deletedItem = null;
-}
+    /**
+     * Keeps the stepper honest about the limits the server enforces, so
+     * the visitor is never allowed to ask for something that will be
+     * refused.
+     */
+    function syncStepperBounds(productId, quantity, maximum) {
+        inRow(productId, '.js-decrease').forEach(function (button) {
+            button.disabled = quantity <= 1;
+        });
 
-document
-    .querySelectorAll('.js-increase-button, .js-decrease-button')
-    .forEach((button) => {
-        button.addEventListener('click', async () => {
-            const { productId } = button.dataset;
+        inRow(productId, '.js-increase').forEach(function (button) {
+            button.disabled = quantity >= maximum;
+        });
+    }
 
-            const quantityChange = button.classList.contains(
-                'js-increase-button'
-            )
-                ? 1
-                : -1;
+    // Rendered by the server so the client and the model cannot drift.
+    var list = App.$('.js-cart-list');
 
-            button.disabled = true;
+    var MAX_QUANTITY = list ? Number(list.dataset.maxQuantity) || 100 : 100;
+
+    /* ----------------------------------------------------------------
+       Quantity
+       ---------------------------------------------------------------- */
+
+    App.$$('.js-increase, .js-decrease').forEach(function (button) {
+        button.addEventListener('click', async function () {
+            var productId = button.dataset.productId;
+            var row = itemRow(productId);
+            var stepper = row ? App.$('.js-stepper', row) : null;
+
+            var change = button.classList.contains('js-increase') ? 1 : -1;
+
+            // Both buttons are locked for the round trip: a fast double
+            // click must not queue two conflicting changes.
+            var buttons = inRow(productId, '.stepper__button');
+
+            buttons.forEach(function (element) {
+                element.disabled = true;
+            });
+
+            if (stepper) {
+                stepper.classList.add('is-busy');
+            }
 
             try {
-                const data = await window.apiFetch(`/cart/${productId}`, {
+                var data = await App.api('/cart/' + productId, {
                     method: 'PATCH',
-                    body: { quantityChange }
+                    body: { quantityChange: change }
                 });
 
                 if (!data) {
                     return;
                 }
 
-                setText(`.js-quantity-${productId}`, data.itemQuantity);
-                applyCartTotals(data);
+                inRow(productId, '.js-quantity').forEach(function (element) {
+                    element.textContent = data.itemQuantity;
+                });
+
+                inRow(productId, '.js-item-price').forEach(function (element) {
+                    element.textContent = '$' + data.itemPrice;
+                });
+
+                applyTotals(data);
+                syncStepperBounds(productId, data.itemQuantity, MAX_QUANTITY);
             } catch (error) {
-                window.alert(error.message);
+                App.toast({ message: error.message, type: 'error' });
+
+                // The quantity on screen is still the server's last known
+                // value, so restore the controls around it.
+                var current = Number(
+                    (inRow(productId, '.js-quantity')[0] || {}).textContent
+                );
+
+                syncStepperBounds(
+                    productId,
+                    isFinite(current) ? current : 1,
+                    MAX_QUANTITY
+                );
             } finally {
-                button.disabled = false;
+                if (stepper) {
+                    stepper.classList.remove('is-busy');
+                }
             }
         });
     });
 
-document.querySelectorAll('.js-delete-button').forEach((button) => {
-    button.addEventListener('click', async () => {
-        const { productId } = button.dataset;
+    /* ----------------------------------------------------------------
+       Removal, with undo
+       ---------------------------------------------------------------- */
 
-        const cartItem = document.querySelector(
-            `.js-cart-item-${productId}`
-        );
+    /** Puts a removed item back and re-renders from the server. */
+    async function undoRemoval(productId, quantity) {
+        var data = await App.api('/cart/' + productId, {
+            method: 'POST',
+            body: { quantity: quantity }
+        });
 
-        const quantityElement = cartItem
-            ? cartItem.querySelector(`.js-quantity-${productId}`)
-            : null;
-
-        const quantity = quantityElement
-            ? Number(quantityElement.textContent)
-            : 1;
-
-        button.disabled = true;
-
-        try {
-            const data = await window.apiFetch(`/cart/${productId}`, {
-                method: 'DELETE'
-            });
-
-            if (!data) {
-                return;
-            }
-
-            deletedItem = { productId, quantity };
-
-            if (cartItem) {
-                cartItem.classList.add('removing');
-            }
-
-            setTimeout(() => {
-                if (cartItem) {
-                    cartItem.remove();
-                }
-
-                // Nothing left to update in place, so re-render the
-                // empty-cart state from the server.
-                if (data.cartQuantity === 0) {
-                    window.location.reload();
-                    return;
-                }
-
-                applyCartTotals(data);
-                showCartToast('Item removed from your cart');
-            }, 300);
-        } catch (error) {
-            window.alert(error.message);
-            button.disabled = false;
-        }
-    });
-});
-
-if (undoButton) {
-    undoButton.addEventListener('click', async () => {
-        if (!deletedItem) {
+        if (!data) {
             return;
         }
 
-        undoButton.disabled = true;
+        window.location.reload();
+    }
 
-        const { productId, quantity } = deletedItem;
+    App.$$('.js-remove-item').forEach(function (button) {
+        button.addEventListener('click', async function () {
+            var productId = button.dataset.productId;
+            var name = button.dataset.productName || 'Item';
+            var row = itemRow(productId);
 
-        try {
-            const data = await window.apiFetch(`/cart/${productId}`, {
-                method: 'POST',
-                body: { quantity }
+            var quantityElement = inRow(productId, '.js-quantity')[0];
+
+            var quantity = quantityElement
+                ? Number(quantityElement.textContent)
+                : 1;
+
+            var data = await App.submit(button, function () {
+                return App.api('/cart/' + productId, { method: 'DELETE' });
             });
 
             if (!data) {
                 return;
             }
 
-            hideCartToast();
+            if (row) {
+                row.classList.add('is-removing');
+            }
 
-            window.location.reload();
-        } catch (error) {
-            window.alert(error.message);
-            undoButton.disabled = false;
-        }
+            // Nothing is left to update in place, so let the server
+            // render the empty state rather than assembling it here.
+            if (data.cartQuantity === 0) {
+                window.location.reload();
+                return;
+            }
+
+            applyTotals(data);
+
+            window.setTimeout(function () {
+                if (row && row.parentNode) {
+                    row.parentNode.removeChild(row);
+                }
+            }, 320);
+
+            App.toast({
+                message: name + ' removed from your cart',
+                type: 'info',
+                action: {
+                    label: 'Undo',
+                    onClick: function () {
+                        return undoRemoval(productId, quantity);
+                    }
+                }
+            });
+        });
     });
-}
 
-const checkoutButton = document.querySelector('.js-checkout-button');
-const checkoutLoadingOverlay = document.querySelector(
-    '.js-checkout-loading-overlay'
-);
+    /* ----------------------------------------------------------------
+       Checkout
+       ---------------------------------------------------------------- */
 
-if (checkoutButton) {
-    checkoutButton.addEventListener('click', () => {
-        checkoutButton.disabled = true;
+    var checkoutButton = App.$('.js-checkout-button');
+    var checkoutOverlay = App.$('.js-checkout-overlay');
 
-        if (checkoutLoadingOverlay) {
-            checkoutLoadingOverlay.classList.add('active');
-        }
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', function () {
+            // No artificial pause: the overlay covers the real page load
+            // and a second click cannot start a second navigation.
+            checkoutButton.disabled = true;
 
-        setTimeout(() => {
+            if (checkoutOverlay) {
+                checkoutOverlay.classList.add('is-active');
+            }
+
             window.location.href = '/checkout';
-        }, 600);
-    });
-}
+        });
+    }
+})();

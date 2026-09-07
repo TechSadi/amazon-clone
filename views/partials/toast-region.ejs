@@ -1,0 +1,13 @@
+<%#
+  The one notification surface for the whole site.
+
+  A live region so a screen reader announces the same result a sighted
+  visitor sees. `pointer-events: none` on the container keeps it from
+  covering anything the visitor is trying to click.
+%>
+<div
+    class="toast-region js-toast-region"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+></div>

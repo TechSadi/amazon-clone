@@ -1,155 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
+<% layout('layouts/base') %>
+<% block('title', 'Track package') %>
+<% block('styles', '<link rel="stylesheet" href="/styles/pages/tracking.css">') %>
+<% block('scripts', '<script src="/scripts/tracking.js" defer></script>') %>
 
-<head>
-  <title>Tracking</title>
+<%
+    const stage = percentProgress >= 100
+        ? 'delivered'
+        : percentProgress >= 50
+          ? 'shipped'
+          : 'preparing';
 
-  <!-- This code is needed for responsive design to work.
-      (Responsive design = make the website look good on
-      smaller screen sizes like a phone or a tablet). -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <meta name="csrf-token" content="<%= csrfToken %>">
+    const steps = [
+        { key: 'preparing', label: 'Preparing', caption: 'We are packing your order.' },
+        { key: 'shipped', label: 'Shipped', caption: 'Your package is on its way.' },
+        { key: 'delivered', label: 'Delivered', caption: 'Left at your address.' }
+    ];
 
-  <!-- Load a font called Roboto from Google Fonts. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    const currentIndex = steps.findIndex((step) => step.key === stage);
+%>
 
-  <!-- Here are the CSS files for this page. -->
-  <link rel="stylesheet" href="/styles/shared/general.css">
-  <link rel="stylesheet" href="/styles/shared/amazon-header.css">
-  <link rel="stylesheet" href="/styles/pages/tracking.css">
-  <script src="/scripts/tracking.js" defer></script>
-</head>
+<main class="page" id="main">
 
-<body>
-  <div class="amazon-header">
-    <div class="amazon-header-left-section">
-      <a href="/products" class="header-link">
-        <img class="amazon-logo" src="/images/amazon-logo-white.png">
-        <img class="amazon-mobile-logo" src="/images/amazon-mobile-logo-white.png">
-      </a>
-    </div>
+    <div class="container container--narrow">
 
-    <div class="amazon-header-middle-section">
-      <input class="search-bar" type="text" placeholder="Search">
+        <a class="link link-back tracking__back" href="/orders">
+            <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 5l-7 7 7 7" />
+            </svg>
+            All orders
+        </a>
 
-      <button class="search-button">
-        <img class="search-icon" src="/images/icons/search-icon.png">
-      </button>
-    </div>
+        <div class="card card--padded">
 
-    <div class="amazon-header-right-section">
-    
-      <% if (currentUser) { %>
-    
-        <div class="account-link header-link">
-    
-          <span class="returns-text">
-            Hello, <%= currentUser.name %>
-          </span>
-    
-          <form action="/users/logout" method="POST" class="js-logout-form">
-<input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button type="submit" class="account-action-button">
-              Sign out
-            </button>
-          </form>
-    
-        </div>
-    
-        <% } else { %>
-    
-          <a class="account-link header-link" href="/users/login">
-    
-            <span class="returns-text">
-              Hello, Guest
-            </span>
-    
-            <span class="orders-text">
-              Sign in
-            </span>
-    
-          </a>
-    
-          <% } %>
-    
-    
-            <a class="orders-link header-link" href="/orders">
-              <span class="returns-text">
-                Returns
-              </span>
-    
-              <span class="orders-text">
-                & Orders
-              </span>
-            </a>
-    
-    
-            <a class="cart-link header-link" href="/cart">
-    
-              <img class="cart-icon" src="/images/icons/cart-icon.png">
-    
-              <div class="cart-quantity js-cart-quantity">
-                <%= cartQuantity %>
-              </div>
-    
-              <div class="cart-text">
-                Cart
-              </div>
-    
-            </a>
-    
-    </div>
-  </div>
+            <p class="tracking__status">
+                <% if (stage === 'delivered') { %>
+                    <span class="badge badge--success">Delivered</span>
+                <% } else { %>
+                    <span class="badge badge--info">On the way</span>
+                <% } %>
+            </p>
 
-  <div class="main">
-    <div class="order-tracking">
-      <a href="/orders">
-        <button class="products-button">View all orders</button>
-      </a>
+            <h1 class="tracking__date">
+                <% if (stage === 'delivered') { %>
+                    Delivered <%= deliveryDate %>
+                <% } else { %>
+                    Arriving <%= deliveryDate %>
+                <% } %>
+            </h1>
 
-      <div class="delivery-date">
-        Arriving on <%= deliveryDate %>
-      </div>
+            <div class="tracking__item">
 
-      <div class="product-info">
-        <%= item.name %>
-      </div>
+                <div class="tracking__media">
+                    <img src="/<%= item.image %>" alt="" loading="lazy" decoding="async">
+                </div>
 
-      <div class="product-info">
-        Quantity: <%= item.quantity %>
-      </div>
+                <div>
+                    <h2 class="tracking__name"><%= item.name %></h2>
+                    <p class="text-muted">Quantity: <%= item.quantity %></p>
+                </div>
 
-      <img class="product-image" src="/<%= item.image %>" alt="<%= item.name %>">
+            </div>
 
-      <div class="progress-labels-container">
+            <div class="tracking__progress">
 
-        <div class="progress-label 
-          <%= percentProgress < 50 ? 'current-status': '' %>">
-          Preparing
+                <div
+                    class="tracking__bar"
+                    role="progressbar"
+                    aria-valuenow="<%= percentProgress %>"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-label="Delivery progress"
+                >
+                    <span class="tracking__bar-fill js-progress-bar" data-progress="<%= percentProgress %>"></span>
+                </div>
+
+                <ol class="tracking__steps">
+                    <% steps.forEach((step, index) => { %>
+                        <li class="tracking__step <%= index <= currentIndex ? 'is-complete' : '' %> <%= index === currentIndex ? 'is-current' : '' %>">
+                            <span class="tracking__step-marker" aria-hidden="true"></span>
+                            <span class="tracking__step-label"><%= step.label %></span>
+                            <span class="tracking__step-caption"><%= step.caption %></span>
+                        </li>
+                    <% }) %>
+                </ol>
+
+            </div>
+
         </div>
 
-        <div class="progress-label 
-          <%= (percentProgress >= 50 && percentProgress < 100) ? 'current-status': '' %>">
-          Shipped
-        </div>
-
-        <div class="progress-label
-          <%= percentProgress >= 100 ? 'current-status' : '' %>">
-          Delivered
-        </div>
-
-      </div>
-
-      <div class="progress-bar-container">
-        <div class="progress-bar js-progress-bar" data-progress="<%= percentProgress %>"
-          role="progressbar" aria-valuenow="<%= percentProgress %>" aria-valuemin="0" aria-valuemax="100"
-          aria-label="Delivery progress"></div>
-      </div>
     </div>
-  </div>
-</body>
 
-</html>
+</main>

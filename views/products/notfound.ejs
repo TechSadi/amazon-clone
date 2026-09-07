@@ -1,53 +1,87 @@
-<%- include('../partials/header') %>    
-<!-- PRODUCT NOT FOUND BODY -->
-    <main class="not-found-page">
+<%#
+  Shown when a search matches nothing, and when the catalogue is empty.
 
-        <div class="not-found-content">
+  Both are ordinary outcomes rather than errors, so this page keeps the
+  full site chrome: the search box still holds the query, and the
+  category nav gives an obvious way forward.
+%>
+<% layout('layouts/base') %>
+<% block('title', q ? 'No results for ' + q : 'No products yet') %>
+<% block('styles', '<link rel="stylesheet" href="/styles/pages/products.css">') %>
 
-            <div class="not-found-icon">
-                <img src="/images/icons/not-found-icon.png" alt="">
+<main class="page" id="main">
 
-            </div>
+    <div class="container container--narrow">
 
-            <% if (q) { %>
+        <div class="card">
 
-                <h1>Product Not Found</h1>
+            <div class="empty-state">
 
-                <p class="search-result-text">
-                    We couldn't find any products matching
-                </p>
+                <span class="empty-state__art">
+                    <% if (q) { %>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="M20 20l-3.7-3.7" />
+                            <path d="M8.8 8.8l4.4 4.4M13.2 8.8l-4.4 4.4" />
+                        </svg>
+                    <% } else { %>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z" />
+                            <path d="M3 7.5 12 12l9-4.5M12 12v9" />
+                        </svg>
+                    <% } %>
+                </span>
 
-                <p class="search-query">
-                    "<%= q %>"
-                </p>
+                <% if (q) { %>
 
-                <p class="suggestion-text">
-                    Check the spelling, try a different search term,
-                    or browse our available products.
-                </p>
+                    <h1 class="empty-state__title">
+                        No results for &ldquo;<%= q %>&rdquo;
+                    </h1>
 
-            <% } else { %>
+                    <p class="empty-state__message">
+                        Check the spelling, try a more general word, or browse a
+                        category below.
+                    </p>
 
-                <h1>No products yet</h1>
+                    <div class="empty-state__actions">
+                        <a class="btn btn--primary" href="/products">
+                            Browse all products
+                        </a>
+                    </div>
 
-                <p class="suggestion-text">
-                    There is nothing in the store at the moment.
-                    Please check back soon.
-                </p>
+                    <div class="suggested-terms">
+                        <p class="suggested-terms__label">Popular searches</p>
 
-            <% } %>
+                        <ul class="suggested-terms__list">
+                            <% ['kitchen', 'apparel', 'footwear', 'towels', 'sunglasses', 'socks'].forEach((term) => { %>
+                                <li>
+                                    <a class="suggested-terms__chip" href="/products?q=<%= encodeURIComponent(term) %>">
+                                        <%= term %>
+                                    </a>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    </div>
 
+                <% } else { %>
 
-            <div class="not-found-buttons">
+                    <h1 class="empty-state__title">No products yet</h1>
 
-                <a href="/products" class="continue-shopping-button">
-                    Continue Shopping
-                </a>
+                    <p class="empty-state__message">
+                        There is nothing in the store at the moment. Please check
+                        back soon.
+                    </p>
+
+                    <div class="empty-state__actions">
+                        <a class="btn btn--secondary" href="/products">Refresh</a>
+                    </div>
+
+                <% } %>
 
             </div>
 
         </div>
 
-    </main>
+    </div>
 
-<%- include('../partials/footer') %>
+</main>

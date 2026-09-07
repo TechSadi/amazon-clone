@@ -1,10 +1,11 @@
 import * as cartService from '../services/cartService.js';
-import { calculateTotals } from '../services/pricingService.js';
+import { calculateTotals, lineTotalCents } from '../services/pricingService.js';
 import {
     parseQuantity,
     parseQuantityChange
 } from '../validators/cartValidator.js';
 import { formatCurrency } from '../utils/money.js';
+import { MAX_ITEM_QUANTITY } from '../models/cart.js';
 
 /**
  * Every response here reports the cart as the database now holds it,
@@ -45,7 +46,15 @@ export const loadCart = async (req, res) => {
         req.session.userId
     );
 
-    res.render('cart/cart', { cart, cartQuantity, subtotal });
+    res.render('cart/cart', {
+        cart,
+        cartQuantity,
+        subtotal,
+        // The quantity stepper disables itself at the same ceiling the
+        // server enforces, so the visitor never gets a rejection they
+        // could have been shown up front.
+        maxItemQuantity: MAX_ITEM_QUANTITY
+    });
 };
 
 export const updateQuantity = async (req, res) => {
@@ -55,13 +64,20 @@ export const updateQuantity = async (req, res) => {
         parseQuantityChange(req.body.quantityChange)
     );
 
-    const { cartQuantity, subtotal } = await cartSnapshot(
+    const { cart, cartQuantity, subtotal } = await cartSnapshot(
         req.session.userId
+    );
+
+    const item = cart?.items.find(
+        (candidate) => String(candidate.product._id) === req.params.productId
     );
 
     res.json({
         updated: true,
         itemQuantity,
+        // The line total is formatted here for the same reason as every
+        // other figure: the browser never does arithmetic on money.
+        itemPrice: formatCurrency(item ? lineTotalCents(item) : 0),
         cartQuantity,
         subtotal
     });

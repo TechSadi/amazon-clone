@@ -1,65 +1,105 @@
-<%- include('../partials/header') %>
-  <div class="main">
-    <div class="products-grid">
+<% layout('layouts/base') %>
+<% block('title', q ? 'Results for ' + q : 'All products') %>
+<% block('styles', '<link rel="stylesheet" href="/styles/pages/products.css">') %>
+<% block('scripts', '<script src="/scripts/products.js" defer></script>') %>
 
-      <% products.forEach(product=> { %>
-        <div class="product-container">
-          <a href="/products/<%= product._id %>">
-            <div class="product-image-container">
-              <img class="product-image" src="/<%= product.image %>" alt="<%= product.name %>">
+<main class="page" id="main">
+
+    <div class="container container--wide">
+
+        <div class="page-header">
+
+            <div>
+                <h1 class="page-title">
+                    <% if (q) { %>
+                        Results for &ldquo;<%= q %>&rdquo;
+                    <% } else { %>
+                        All products
+                    <% } %>
+                </h1>
+
+                <p class="page-subtitle">
+                    <%= products.length %>
+                    <%= products.length === 1 ? 'product' : 'products' %>
+                    <% if (q) { %>
+                        &middot; <a class="link" href="/products">Clear search</a>
+                    <% } %>
+                </p>
             </div>
-          </a>
-          <a href="/products/<%= product._id %>" class="product-name-link">
-            <div class="product-name limit-text-to-2-lines">
-              <%= product.name %>
-            </div>
-          </a>
 
-          <div class="product-rating-container">
-            <% const stars = String(Math.round((product.rating.stars || 0) * 10)).padStart(2, '0'); %>
-            <img class="product-rating-stars" src="/images/ratings/rating-<%= stars %>.png"
-              alt="Rated <%= product.rating.stars || 0 %> out of 5 stars">
-            <div class="product-rating-count link-primary">
-              <%= product.rating.count %>
-            </div>
-          </div>
-
-          <div class="product-price">
-            $<%= (product.priceCents / 100).toFixed(2) %>
-          </div>
-
-          <div class="product-quantity-container">
-            <select class="js-quantity-selector-<%=product._id%>"
-              aria-label="Quantity of <%= product.name %>">
-              <option selected value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-
-          <div class="product-spacer"></div>
-
-          <div class="added-to-cart js-added-to-cart-<%= product._id %>">
-            <img src="/images/icons/checkmark.png" alt="">
-            Added
-          </div>
-
-          <button type="button" class="add-to-cart-button button-primary js-add-to-cart"
-            data-product-id="<%= product._id %>">
-            Add to Cart
-          </button>
         </div>
 
-        <% }) %>
+        <ul class="product-grid">
+
+            <% products.forEach((product, index) => { %>
+
+                <li class="product-card">
+
+                    <a class="product-card__media" href="/products/<%= product._id %>" tabindex="-1" aria-hidden="true">
+                        <img
+                            class="product-card__image"
+                            src="/<%= product.image %>"
+                            alt=""
+                            loading="<%= index < 8 ? 'eager' : 'lazy' %>"
+                            decoding="async"
+                        >
+                    </a>
+
+                    <div class="product-card__body">
+
+                        <h2 class="product-card__title">
+                            <%# The whole card is reachable through this one link,
+                                so the image above is hidden from the tab order and
+                                from assistive technology rather than repeating it. %>
+                            <a class="product-card__link" href="/products/<%= product._id %>">
+                                <span class="clamp-2"><%= product.name %></span>
+                            </a>
+                        </h2>
+
+                        <%- include('../partials/rating', {
+                            ratingStars: product.rating.stars,
+                            ratingCount: product.rating.count
+                        }) %>
+
+                        <p class="price product-card__price">
+                            <span class="price__symbol">$</span><%= (product.priceCents / 100).toFixed(2) %>
+                        </p>
+
+                        <div class="product-card__actions">
+
+                            <label class="visually-hidden" for="qty-<%= product._id %>">
+                                Quantity of <%= product.name %>
+                            </label>
+
+                            <select
+                                id="qty-<%= product._id %>"
+                                class="select product-card__quantity js-quantity-select"
+                                data-product-id="<%= product._id %>"
+                            >
+                                <% for (let value = 1; value <= 10; value++) { %>
+                                    <option value="<%= value %>"><%= value %></option>
+                                <% } %>
+                            </select>
+
+                            <button
+                                type="button"
+                                class="btn btn--primary btn--pill product-card__add js-add-to-cart"
+                                data-product-id="<%= product._id %>"
+                                data-product-name="<%= product.name %>"
+                            >
+                                Add to cart
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </li>
+
+            <% }) %>
+
+        </ul>
 
     </div>
-  </div>
 
-  <%- include('../partials/footer') %>
+</main>

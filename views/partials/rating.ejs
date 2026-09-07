@@ -1,0 +1,32 @@
+<%#
+  Star rating.
+
+  Expects: ratingStars (number), ratingCount (number).
+
+  The star images are named rating-0, rating-05, rating-10 ... rating-50,
+  so a zero rating is "0" rather than the "00" a plain pad would produce
+  and which has no file behind it.
+%>
+<%
+    const starsValue = Math.max(0, Math.min(5, Number(ratingStars) || 0));
+    const starsKey = starsValue === 0
+        ? '0'
+        : String(Math.round(starsValue * 10)).padStart(2, '0');
+    const reviewCount = Number(ratingCount) || 0;
+%>
+<p class="rating">
+    <img
+        class="rating__stars"
+        src="/images/ratings/rating-<%= starsKey %>.png"
+        alt="Rated <%= starsValue %> out of 5 stars"
+        width="88"
+        height="18"
+        loading="lazy"
+    >
+    <span class="rating__count">
+        <%= reviewCount.toLocaleString('en-US') %>
+        <span class="visually-hidden">
+            <%= reviewCount === 1 ? 'review' : 'reviews' %>
+        </span>
+    </span>
+</p>

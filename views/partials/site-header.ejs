@@ -1,0 +1,215 @@
+<%#
+  Site header.
+
+  Rendered once, by the layout. Every page used to carry its own copy,
+  and two of those copies had a search box that was not inside a form and
+  so could not search.
+
+  Reads `currentUser` and `csrfToken` from res.locals, and `cartQuantity`
+  and `q` from the view when the page supplies them.
+%>
+<%
+    const cartCount = typeof cartQuantity === 'number' ? cartQuantity : 0;
+    const searchTerm = typeof q === 'string' && q ? q : '';
+
+    const categories = [
+        { label: 'All', term: '' },
+        { label: 'Kitchen', term: 'kitchen' },
+        { label: 'Apparel', term: 'apparel' },
+        { label: 'Footwear', term: 'footwear' },
+        { label: 'Home', term: 'home' },
+        { label: 'Bedroom', term: 'bedroom' },
+        { label: 'Bathroom', term: 'bathroom' },
+        { label: 'Accessories', term: 'accessories' },
+        { label: 'Sports', term: 'sports' }
+    ];
+%>
+
+<header class="site-header">
+
+    <div class="site-header__bar">
+
+        <button
+            type="button"
+            class="site-header__menu-toggle js-drawer-toggle"
+            aria-expanded="false"
+            aria-controls="site-drawer"
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            <span class="visually-hidden">Open menu</span>
+        </button>
+
+        <a class="site-header__logo header-link" href="/products">
+            <img src="/images/amazon-logo-white.png" alt="Amazon Clone home">
+            <img class="logo--mobile" src="/images/amazon-mobile-logo-white.png" alt="Amazon Clone home">
+        </a>
+
+        <form class="site-search js-site-search" action="/products" method="GET" role="search">
+
+            <label class="visually-hidden" for="site-search-input">
+                Search products
+            </label>
+
+            <input
+                id="site-search-input"
+                class="site-search__input js-search-input"
+                type="search"
+                name="q"
+                value="<%= searchTerm %>"
+                placeholder="Search products"
+                autocomplete="off"
+                maxlength="100"
+            >
+
+            <button type="button" class="site-search__clear js-search-clear" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+                <span class="visually-hidden">Clear search</span>
+            </button>
+
+            <button type="submit" class="site-search__submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3.7-3.7" />
+                </svg>
+                <span class="visually-hidden">Search</span>
+            </button>
+
+        </form>
+
+        <nav class="site-header__actions" aria-label="Account and cart">
+
+            <% if (currentUser) { %>
+
+                <div class="header-link header-account">
+                    <span class="header-link__caption">
+                        Hello, <span class="header-account__name"><%= currentUser.name %></span>
+                    </span>
+
+                    <form action="/users/logout" method="POST" class="js-logout-form">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="header-account__signout">
+                            Sign out
+                        </button>
+                    </form>
+                </div>
+
+            <% } else { %>
+
+                <a class="header-link header-account" href="/users/login">
+                    <span class="header-link__caption">Hello, sign in</span>
+                    <span class="header-link__value">Account</span>
+                </a>
+
+            <% } %>
+
+            <a class="header-link header-orders" href="/orders">
+                <span>
+                    <span class="header-link__caption">Returns</span>
+                    <span class="header-link__value">&amp; Orders</span>
+                </span>
+            </a>
+
+            <a class="header-link header-cart" href="/cart">
+                <span class="header-cart__icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2.5 4h2.4l2.2 10.6a1.7 1.7 0 0 0 1.7 1.4h8.4a1.7 1.7 0 0 0 1.6-1.3L20.5 8H6" />
+                        <circle cx="9.5" cy="19.5" r="1.5" />
+                        <circle cx="17" cy="19.5" r="1.5" />
+                    </svg>
+                    <span class="header-cart__count js-cart-quantity"><%= cartCount %></span>
+                </span>
+                <span class="header-cart__label">Cart</span>
+                <span class="visually-hidden js-cart-label">
+                    <%= cartCount === 1 ? '1 item' : cartCount + ' items' %>
+                </span>
+            </a>
+
+        </nav>
+
+    </div>
+
+    <div class="site-subnav">
+        <nav class="site-subnav__list" aria-label="Shop by category">
+            <% categories.forEach((category) => { %>
+                <a
+                    class="site-subnav__link"
+                    href="<%= category.term ? '/products?q=' + encodeURIComponent(category.term) : '/products' %>"
+                    <% if (searchTerm.toLowerCase() === category.term) { %>aria-current="page"<% } %>
+                >
+                    <%= category.label %>
+                </a>
+            <% }) %>
+        </nav>
+    </div>
+
+</header>
+
+<!-- Mobile navigation. Hidden from assistive technology and from the tab
+     order while closed; core.js manages `inert` and focus. -->
+<div class="site-drawer js-site-drawer" id="site-drawer">
+
+    <div class="site-drawer__scrim js-drawer-close"></div>
+
+    <div class="site-drawer__panel" role="dialog" aria-modal="true" aria-label="Site menu">
+
+        <div class="site-drawer__header">
+            <span class="site-drawer__greeting">
+                <% if (currentUser) { %>
+                    Hello, <%= currentUser.name %>
+                <% } else { %>
+                    Hello, sign in
+                <% } %>
+            </span>
+
+            <button type="button" class="site-drawer__close js-drawer-close">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+                <span class="visually-hidden">Close menu</span>
+            </button>
+        </div>
+
+        <div class="site-drawer__section">
+            <p class="site-drawer__heading">Your account</p>
+
+            <% if (currentUser) { %>
+                <a class="site-drawer__link" href="/orders">Returns &amp; orders</a>
+
+                <a class="site-drawer__link" href="/cart">
+                    <span>Cart</span>
+                    <span class="site-drawer__link-count js-cart-quantity"><%= cartCount %></span>
+                </a>
+
+                <form action="/users/logout" method="POST" class="js-logout-form">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="site-drawer__link">Sign out</button>
+                </form>
+            <% } else { %>
+                <a class="site-drawer__link" href="/users/login">Sign in</a>
+                <a class="site-drawer__link" href="/users/register">Create an account</a>
+
+                <a class="site-drawer__link" href="/cart">
+                    <span>Cart</span>
+                    <span class="site-drawer__link-count js-cart-quantity"><%= cartCount %></span>
+                </a>
+            <% } %>
+        </div>
+
+        <div class="site-drawer__section">
+            <p class="site-drawer__heading">Shop by category</p>
+
+            <% categories.forEach((category) => { %>
+                <a
+                    class="site-drawer__link"
+                    href="<%= category.term ? '/products?q=' + encodeURIComponent(category.term) : '/products' %>"
+                ><%= category.label %></a>
+            <% }) %>
+        </div>
+
+    </div>
+
+</div>

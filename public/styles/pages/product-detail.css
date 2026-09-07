@@ -1,0 +1,272 @@
+/* ==========================================================================
+   Product detail
+   ========================================================================== */
+
+.breadcrumb {
+    margin-bottom: var(--space-4);
+}
+
+.breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.breadcrumb__list li + li::before {
+    content: "›";
+    margin-right: var(--space-2);
+    color: var(--color-border-strong);
+}
+
+.breadcrumb__list li[aria-current="page"] {
+    max-width: 40ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Only the category segment comes from product data and needs casing
+   normalised; the fixed labels are already written correctly. */
+.breadcrumb__term {
+    text-transform: capitalize;
+}
+
+/* Three columns on a wide screen: gallery, information, buy box. Below
+   1024px the buy box moves under the gallery so the purchase decision
+   stays above the specification detail. */
+.product-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) minmax(280px, 3fr);
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.product-detail__gallery {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+}
+
+/* See products.css: the square is only kept if the box is allowed to be
+   shorter than the photo inside it. */
+.product-detail__frame {
+    display: block;
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+    padding: var(--space-6);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.product-detail__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.product-detail__info {
+    padding: var(--space-6);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.product-detail__title {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    letter-spacing: -0.01em;
+}
+
+.product-detail__price {
+    color: var(--color-ink);
+}
+
+.product-detail__tax-note {
+    margin-top: var(--space-1);
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.product-detail__section {
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border-subtle);
+}
+
+.product-detail__section-title {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-lg);
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.tag {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    background-color: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+    text-transform: capitalize;
+}
+
+.tag:hover {
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-border-strong);
+    color: var(--color-ink);
+    text-decoration: none;
+}
+
+.spec-list__row {
+    display: grid;
+    grid-template-columns: minmax(120px, 34%) 1fr;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+    font-size: var(--text-base);
+}
+
+.spec-list__row:last-child {
+    border-bottom: 0;
+}
+
+.spec-list dt {
+    color: var(--color-ink-muted);
+}
+
+.spec-list dd {
+    margin: 0;
+}
+
+.spec-list__term {
+    text-transform: capitalize;
+}
+
+/* --------------------------------------------------------------------------
+   Buy box
+   -------------------------------------------------------------------------- */
+
+.buy-box {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.buy-box__delivery {
+    font-size: var(--text-base);
+    line-height: var(--leading-snug);
+}
+
+.buy-box__free {
+    color: var(--color-success);
+}
+
+.buy-box__delivery-fast {
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+}
+
+.buy-box__stock {
+    color: var(--color-success);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-medium);
+}
+
+.buy-box__quantity .select {
+    width: 100%;
+}
+
+.buy-box__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+}
+
+.buy-box__assurances {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border-subtle);
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+}
+
+.buy-box__assurances li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.buy-box__assurances svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+    .product-detail {
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    }
+
+    /* Gallery and buy box share the first row; the information column
+       spans the full width beneath them. */
+    .product-detail__info {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .product-detail__gallery,
+    .buy-box {
+        position: static;
+    }
+}
+
+@media (max-width: 720px) {
+    .product-detail {
+        grid-template-columns: 1fr;
+    }
+
+    .product-detail__info {
+        grid-column: auto;
+        grid-row: auto;
+        padding: var(--space-5);
+    }
+
+    .product-detail__frame {
+        padding: var(--space-4);
+    }
+
+    .product-detail__title {
+        font-size: var(--text-xl);
+    }
+}

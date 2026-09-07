@@ -1,212 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>Orders</title>
+<% layout('layouts/base') %>
+<% block('title', 'Your orders') %>
+<% block('styles', '<link rel="stylesheet" href="/styles/pages/orders.css">') %>
+<% block('scripts', '<script src="/scripts/orders.js" defer></script>') %>
 
-    <!-- This code is needed for responsive design to work.
-      (Responsive design = make the website look good on
-      smaller screen sizes like a phone or a tablet). -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <meta name="csrf-token" content="<%= csrfToken %>">
+<main class="page" id="main">
 
-    <!-- Load a font called Roboto from Google Fonts. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <div class="container">
 
-    <!-- Here are the CSS files for this page. -->
-    <link rel="stylesheet" href="/styles/shared/general.css">
-    <link rel="stylesheet" href="/styles/shared/amazon-header.css">
-    <link rel="stylesheet" href="/styles/pages/orders.css">
-    <script src="/scripts/http.js" defer></script>
-    <script src="/scripts/orders.js" defer></script>
-  </head>
-  <body>
-    <div class="amazon-header">
-      <div class="amazon-header-left-section">
-        <a href="/products" class="header-link">
-          <img class="amazon-logo"
-            src="/images/amazon-logo-white.png">
-          <img class="amazon-mobile-logo"
-            src="/images/amazon-mobile-logo-white.png">
-        </a>
-      </div>
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Your orders</h1>
 
-      <div class="amazon-header-middle-section">
-        <input class="search-bar" type="text" placeholder="Search">
+                <p class="page-subtitle">
+                    <%= orders.length %>
+                    <%= orders.length === 1 ? 'order' : 'orders' %>
+                </p>
+            </div>
 
-        <button class="search-button">
-          <img class="search-icon" src="/images/icons/search-icon.png">
-        </button>
-      </div>
+            <a class="btn btn--secondary" href="/products">Continue shopping</a>
+        </div>
 
-      <div class="amazon-header-right-section">
-      
-        <% if (currentUser) { %>
-      
-          <div class="account-link header-link">
-      
-            <span class="returns-text">
-              Hello, <%= currentUser.name %>
-            </span>
-      
-            <form action="/users/logout" method="POST" class="js-logout-form">
-<input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <button type="submit" class="account-action-button">
-                Sign out
-              </button>
-            </form>
-      
-          </div>
-      
-          <% } else { %>
-      
-            <a class="account-link header-link" href="/users/login">
-      
-              <span class="returns-text">
-                Hello, Guest
-              </span>
-      
-              <span class="orders-text">
-                Sign in
-              </span>
-      
-            </a>
-      
-            <% } %>
-      
-      
-              <a class="orders-link header-link" href="/orders">
-                <span class="returns-text">
-                  Returns
-                </span>
-      
-                <span class="orders-text">
-                  & Orders
-                </span>
-              </a>
-      
-      
-              <a class="cart-link header-link" href="/cart">
-      
-                <img class="cart-icon" src="/images/icons/cart-icon.png">
-      
-                <div class="cart-quantity js-cart-quantity">
-                  <%= cartQuantity %>
-                </div>
-      
-                <div class="cart-text">
-                  Cart
-                </div>
-      
-              </a>
-      
-      </div>
-    </div>
-
-    <div class="main">
-      <div class="order-page-header">
-
-        <div class="page-title">Your Orders</div>
-
-        <a href="/products">
-          <button class="products-button">Go to products</button>
-        </a>
-
-      </div>
-      <div class="orders-grid">
         <% if (orders.length === 0) { %>
 
-          <div class="orders-empty">
-            <h2 class="orders-empty-title">You have no orders yet</h2>
-            <p class="orders-empty-message">
-              Once you place an order it will show up here.
-            </p>
-            <a class="orders-empty-link" href="/products">Start shopping</a>
-          </div>
+            <div class="card">
+                <div class="empty-state">
 
-        <% } %>
+                    <span class="empty-state__art">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z" />
+                            <path d="M3 7.5 12 12l9-4.5M12 12v9" />
+                        </svg>
+                    </span>
 
-        <% orders.forEach((order) => {  %>
-            <div class="order-container">
+                    <h2 class="empty-state__title">No orders yet</h2>
 
-              <!-- Order Header -->
-              <div class="order-header">
-                <div class="order-header-left-section">
+                    <p class="empty-state__message">
+                        Once you place an order it will appear here, along with
+                        its delivery date and tracking.
+                    </p>
 
-                  <div class="order-date">
-                    <div class="order-header-label">Order Placed:</div>
-                    <div>
-                      <%= order.placedOnLabel %>
+                    <div class="empty-state__actions">
+                        <a class="btn btn--primary" href="/products">
+                            Start shopping
+                        </a>
                     </div>
-                  </div>
-                  
-                  <div class="order-total">
-                    <div class="order-header-label">Total:</div>
-                    <div>
-                      $<%= order.totalLabel %>
-                    </div>
-                  </div>
 
                 </div>
+            </div>
 
-                <div class="order-header-right-section">
-                  <div class="order-header-label">Order ID:</div>
-                  <div><%= order.id %></div>
-                </div>
-              </div>
+        <% } else { %>
 
-              <!-- Product inside this order -->
-              <div class="order-details-grid">
+            <div class="orders-list">
 
-                    <% order.items.forEach((item) => { %>
-                    
-                        <div class="product-image-container">
-                          <img src="/<%= item.image %>" alt="<%= item.name %>">
+                <% orders.forEach((order) => { %>
+
+                    <article class="card order">
+
+                        <div class="card__header order__header">
+
+                            <dl class="order__facts">
+
+                                <div class="order__fact">
+                                    <dt>Order placed</dt>
+                                    <dd><%= order.placedOnLabel %></dd>
+                                </div>
+
+                                <div class="order__fact">
+                                    <dt>Total</dt>
+                                    <dd>$<%= order.totalLabel %></dd>
+                                </div>
+
+                                <div class="order__fact">
+                                    <dt>Items</dt>
+                                    <dd><%= order.itemCount %></dd>
+                                </div>
+
+                            </dl>
+
+                            <dl class="order__facts order__facts--end">
+                                <div class="order__fact">
+                                    <dt>Order ID</dt>
+                                    <dd class="order__id"><%= order.id %></dd>
+                                </div>
+                            </dl>
+
                         </div>
 
-                        <div class="product-details">
+                        <ul class="order__items">
 
-                          <div class="product-name">
-                            <%= item.name %>
-                          </div>
+                            <% order.items.forEach((item) => { %>
 
-                          <div class="product-delivery-date">
-                            Arriving on: <%= item.deliveryDateLabel %>
-                          </div>
+                                <li class="order-item">
 
-                          <div class="product-quantity">
-                            Quantity: <%= item.quantity %>
-                          </div>
+                                    <a class="order-item__media" href="/products/<%= item.productId %>" tabindex="-1" aria-hidden="true">
+                                        <img src="/<%= item.image %>" alt="" loading="lazy" decoding="async">
+                                    </a>
 
-                            <button 
-                              class="buy-again-button button-primary js-buy-again-button"
-                              data-product-id="<%= item.productId %>"
-                              data-quantity="<%= item.quantity %>"
-                            >
-                              <img class="buy-again-icon" src="/images/icons/buy-again.png" alt="">
-                              <span class="buy-again-message">Buy it again</span>
-                            </button>
-                          
-                        </div>
+                                    <div class="order-item__details">
 
-                        <div class="product-actions">
-                          <a href="/tracking/<%= order.id %>/<%= item.productId %>">
-                            <button class="track-package-button button-secondary">
-                              Track package
-                            </button>
-                          </a>
-                        </div>
-                  
-                    <% } )%>
-              </div>
+                                        <p class="order-item__status">
+                                            <% if (item.isDelivered) { %>
+                                                <span class="badge badge--success">Delivered</span>
+                                                <span class="text-muted"><%= item.deliveryDateLabel %></span>
+                                            <% } else { %>
+                                                <span class="badge badge--info">On the way</span>
+                                                <span class="text-muted">Arriving <%= item.deliveryDateLabel %></span>
+                                            <% } %>
+                                        </p>
+
+                                        <h2 class="order-item__title">
+                                            <a href="/products/<%= item.productId %>">
+                                                <span class="clamp-2"><%= item.name %></span>
+                                            </a>
+                                        </h2>
+
+                                        <p class="order-item__quantity text-muted">
+                                            Quantity: <%= item.quantity %>
+                                        </p>
+
+                                    </div>
+
+                                    <div class="order-item__actions">
+
+                                        <button
+                                            type="button"
+                                            class="btn btn--primary btn--pill btn--block js-buy-again"
+                                            data-product-id="<%= item.productId %>"
+                                            data-quantity="<%= item.quantity %>"
+                                            data-product-name="<%= item.name %>"
+                                        >
+                                            <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M4 9a8 8 0 1 1 .6 5" />
+                                                <path d="M4 4v5h5" />
+                                            </svg>
+                                            Buy it again
+                                        </button>
+
+                                        <a
+                                            class="btn btn--secondary btn--pill btn--block"
+                                            href="/tracking/<%= order.id %>/<%= item.productId %>"
+                                        >
+                                            Track package
+                                        </a>
+
+                                    </div>
+
+                                </li>
+
+                            <% }) %>
+
+                        </ul>
+
+                    </article>
+
+                <% }) %>
 
             </div>
 
-        <% }) %>
+        <% } %>
 
-      </div>
     </div>
-  </body>
-</html>
+
+</main>

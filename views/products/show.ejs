@@ -1,304 +1,207 @@
-<!DOCTYPE html>
-<html lang="en">
+<% layout('layouts/base') %>
+<% block('title', product.name) %>
+<% block('description', product.name) %>
+<% block('styles', '<link rel="stylesheet" href="/styles/pages/product-detail.css">') %>
+<% block('scripts', '<script src="/scripts/products.js" defer></script>') %>
 
-<head>
-    <title>Amazon Project</title>
+<%
+    const price = (product.priceCents / 100).toFixed(2);
+    const keywords = Array.isArray(product.keywords) ? product.keywords : [];
+    const primaryCategory = product.category || keywords[0] || null;
+%>
 
-    <!-- This code is needed for responsive design to work.
-      (Responsive design = make the website look good on
-      smaller screen sizes like a phone or a tablet). -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <meta name="csrf-token" content="<%= csrfToken %>">
+<main class="page" id="main">
 
-    <!-- Load a font called Roboto from Google Fonts. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <div class="container">
 
-    <!-- Here are the CSS files for this page. -->
-    <link rel="stylesheet" href="/styles/shared/general.css">
-    <link rel="stylesheet" href="/styles/shared/amazon-header.css">
-    <link rel="stylesheet" href="/styles/pages/amazon.css">
-    <link rel="stylesheet" href="/styles/pages/notfound.css">
-    <link rel="stylesheet" href="/styles/pages/show.css">
-    <script src="/scripts/http.js" defer></script>
-    <script src="/scripts/index.js" defer></script>
-</head>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <ol class="breadcrumb__list">
+                <li><a href="/products">All products</a></li>
 
-<body>
-    <div class="amazon-header">
-        <div class="amazon-header-left-section">
-            <a href="/products" class="header-link">
-                <img class="amazon-logo" src="/images/amazon-logo-white.png">
-                <img class="amazon-mobile-logo" src="/images/amazon-mobile-logo-white.png">
-            </a>
-        </div>
+                <% if (primaryCategory) { %>
+                    <li>
+                        <a class="breadcrumb__term" href="/products?q=<%= encodeURIComponent(primaryCategory) %>">
+                            <%= primaryCategory %>
+                        </a>
+                    </li>
+                <% } %>
 
-        <div class="amazon-header-middle-section">
-            <form class="search-form" action="/products" method="GET">
-                <input class="search-bar js-search-bar" name="q" type="text" placeholder="Search">
-                <button class="search-button js-search-button" type="submit">
-                    <img class="search-icon" src="/images/icons/search-icon.png">
-                </button>
-            </form>
+                <li aria-current="page"><%= product.name %></li>
+            </ol>
+        </nav>
 
-        </div>
+        <div class="product-detail">
 
-        <div class="amazon-header-right-section">
+            <!-- Gallery -->
+            <div class="product-detail__gallery">
+                <div class="product-detail__frame">
+                    <img
+                        class="product-detail__image"
+                        src="/<%= product.image %>"
+                        alt="<%= product.name %>"
+                        decoding="async"
+                    >
+                </div>
+            </div>
 
-            <% if (currentUser) { %>
+            <!-- Information -->
+            <div class="product-detail__info">
 
-                <div class="account-link header-link">
+                <h1 class="product-detail__title"><%= product.name %></h1>
 
-                    <span class="returns-text">
-                        Hello, <%= currentUser.name %>
-                    </span>
+                <%- include('../partials/rating', {
+                    ratingStars: product.rating.stars,
+                    ratingCount: product.rating.count
+                }) %>
 
-                    <form action="/users/logout" method="POST" class="js-logout-form">
-<input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <button type="submit" class="account-action-button">
-                            Sign out
-                        </button>
-                    </form>
+                <hr>
 
+                <p class="price price--lg product-detail__price">
+                    <span class="price__symbol">$</span><%= price %>
+                </p>
+
+                <p class="product-detail__tax-note">
+                    Tax is calculated at checkout.
+                </p>
+
+                <% if (keywords.length > 0) { %>
+                    <div class="product-detail__section">
+                        <h2 class="product-detail__section-title">About this item</h2>
+
+                        <ul class="tag-list">
+                            <% keywords.forEach((keyword) => { %>
+                                <li>
+                                    <a class="tag" href="/products?q=<%= encodeURIComponent(keyword) %>">
+                                        <%= keyword %>
+                                    </a>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    </div>
+                <% } %>
+
+                <div class="product-detail__section">
+                    <h2 class="product-detail__section-title">Product details</h2>
+
+                    <dl class="spec-list">
+                        <% if (primaryCategory) { %>
+                            <div class="spec-list__row">
+                                <dt>Category</dt>
+                                <dd class="spec-list__term"><%= primaryCategory %></dd>
+                            </div>
+                        <% } %>
+
+                        <div class="spec-list__row">
+                            <dt>Customer rating</dt>
+                            <dd>
+                                <%= product.rating.stars %> out of 5
+                                (<%= (product.rating.count || 0).toLocaleString('en-US') %>
+                                <%= product.rating.count === 1 ? 'review' : 'reviews' %>)
+                            </dd>
+                        </div>
+
+                        <div class="spec-list__row">
+                            <dt>Price</dt>
+                            <dd>$<%= price %></dd>
+                        </div>
+
+                        <div class="spec-list__row">
+                            <dt>Sold by</dt>
+                            <dd>Amazon Clone</dd>
+                        </div>
+                    </dl>
                 </div>
 
-                <% } else { %>
+            </div>
 
-                    <a class="account-link header-link" href="/users/login">
+            <!-- Buy box -->
+            <aside class="buy-box" aria-label="Purchase options">
 
-                        <span class="returns-text">
-                            Hello, Guest
-                        </span>
+                <p class="price price--lg">
+                    <span class="price__symbol">$</span><%= price %>
+                </p>
 
-                        <span class="orders-text">
-                            Sign in
-                        </span>
-
-                    </a>
-
+                <p class="buy-box__delivery">
+                    <% if (standardDelivery.priceCents === 0) { %>
+                        <strong class="buy-box__free">FREE delivery</strong>
+                    <% } else { %>
+                        <strong>$<%= (standardDelivery.priceCents / 100).toFixed(2) %> delivery</strong>
                     <% } %>
-
-
-                        <a class="orders-link header-link" href="/orders">
-                            <span class="returns-text">
-                                Returns
-                            </span>
-
-                            <span class="orders-text">
-                                & Orders
-                            </span>
-                        </a>
-
-
-                        <a class="cart-link header-link" href="/cart">
-
-                            <img class="cart-icon" src="/images/icons/cart-icon.png">
-
-                            <div class="cart-quantity js-cart-quantity">
-                                <%= cartQuantity %>
-                            </div>
-
-                            <div class="cart-text">
-                                Cart
-                            </div>
-
-                        </a>
-
-        </div>
-    </div>
-
-    <div class="main">
-
-        <div class="product-page">
-
-            <!-- LEFT: PRODUCT IMAGE -->
-            <div class="product-image-section">
-                <img class="main-product-image" src="/<%= product.image %>" alt="Product Image">
-
-                <div class="full-view-text">
-                    Click to see full view
-                </div>
-            </div>
-
-            <!-- MIDDLE: PRODUCT DETAILS -->
-            <div class="product-details-section">
-
-                <h1 class="product-title">
-                    <%= product.name %>
-                </h1>
-
-                <a href="#" class="store-link">
-                </a>
-
-                <div class="product-rating">
-                    <span class="rating-number">4.6</span>
-
-                    <span class="stars">
-                        ★★★★★
-                    </span>
-
-                    <a href="#" class="rating-count">
-                        <%= product.rating.count %>
-                    </a>
-                </div>
-
-                <div class="choice-badge">
-                    Amazon's Choice
-                </div>
-
-                <div class="bought-text">
-                    6K+ bought in past month
-                </div>
-
-                <hr class="section-line">
-
-                <div class="product-price">
-                    <span class="currency">$</span>
-                    <% let price=(product.priceCents / 100).toFixed(2) %>
-                        <span class="price-whole">
-                            <%= price %>
-                        </span>
-                </div>
-
-                <div class="shipping-info">
-                    $10 Shipping & Import Charges to India
-                    <a href="#">Details</a>
-                </div>
-
-                <p class="offer-text">
-                    Available at a lower price from
-                    <a href="#">other sellers</a>
-                    that may not offer free Prime shipping.
+                    <span><%= standardDelivery.date %></span>
                 </p>
 
-
-                <!-- PRODUCT OPTIONS -->
-                <div class="product-option">
-
-                    <div class="option-label">
-                        Color: <strong>Black</strong>
-                    </div>
-
-                    <div class="option-container">
-
-                        <div class="selected-option">
-                            <img src="/<%= product.image %>" alt="Black product">
-
-                            <span>$<%= price%></span>
-                        </div>
-
-                        <button class="offers-button">
-                            See 1 options with no featured offers
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- PRODUCT INFORMATION -->
-                <div class="product-information">
-
-                    <div class="info-row">
-                        <div class="info-label">Color</div>
-                        <div class="info-value">Black</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Material</div>
-                        <div class="info-value">
-                            <%= product.name %>
-                        </div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Brand</div>
-                        <div class="info-value">brand name</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Item Weight</div>
-                        <div class="info-value">4.8 pounds</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Item dimensions</div>
-                        <div class="info-value">Dimesions</div>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- RIGHT: BUY BOX -->
-            <div class="buy-box">
-
-                <div class="buy-price">
-                    <span class="currency">$</span>
-                    <span class="price-whole">
-                        <%= price %>
-                    </span>
-                </div>
-
-                <p class="import-charges">
-                    $10 Shipping & Import Charges to India
-                    <span class="dropdown-arrow">⌄</span>
+                <p class="buy-box__delivery-fast">
+                    Or fastest delivery <strong><%= fastestDelivery.date %></strong>
+                    for $<%= (fastestDelivery.priceCents / 100).toFixed(2) %>
                 </p>
 
-                <p class="delivery-price">
-                    $ 12 delivery
-                </p>
+                <p class="buy-box__stock">In stock</p>
 
-                <p class="delivery-date">
-                    <strong>September 4 - 18</strong>
-                </p>
+                <div class="buy-box__quantity">
+                    <label class="field__label" for="qty-<%= product._id %>">
+                        Quantity
+                    </label>
 
-                <div class="delivery-location">
-                    📍 Deliver to India
+                    <select
+                        id="qty-<%= product._id %>"
+                        class="select js-quantity-select"
+                        data-product-id="<%= product._id %>"
+                    >
+                        <% for (let value = 1; value <= 10; value++) { %>
+                            <option value="<%= value %>"><%= value %></option>
+                        <% } %>
+                    </select>
                 </div>
 
-                <div class="added-to-cart js-added-to-cart-<%= product._id %>">
-                    <img src="/images/icons/checkmark.png">
-                    Added
-                </div>
-
-                <button type="button" class="add-to-cart-button button-primary js-add-to-cart"
-                    data-product-id="<%= product._id %>">
-                    Add to Cart
-                </button>
-                <a href="/checkout">
-                    <button class="buy-now-button">
-                        Buy Now
+                <div class="buy-box__actions">
+                    <button
+                        type="button"
+                        class="btn btn--primary btn--pill btn--block js-add-to-cart"
+                        data-product-id="<%= product._id %>"
+                        data-product-name="<%= product.name %>"
+                    >
+                        Add to cart
                     </button>
-                </a>
 
-                <div class="buy-info">
-
-                    <div class="buy-info-row">
-                        <span>Shipper / Seller</span>
-                        <span>Amazon.com</span>
-                    </div>
-
-                    <div class="buy-info-row">
-                        <span>Returns</span>
-                        <a href="#">30-day refund / replacement</a>
-                    </div>
-
-                    <div class="buy-info-row">
-                        <span>Payment</span>
-                        <a href="#">Secure transaction</a>
-                    </div>
-
+                    <button
+                        type="button"
+                        class="btn btn--dark btn--pill btn--block js-buy-now"
+                        data-product-id="<%= product._id %>"
+                    >
+                        Buy now
+                    </button>
                 </div>
 
-            </div>
+                <ul class="buy-box__assurances">
+                    <li>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 3l7 3v5.5c0 4.2-2.9 7.8-7 9-4.1-1.2-7-4.8-7-9V6z" />
+                            <path d="M9 12l2 2 4-4" />
+                        </svg>
+                        Secure transaction
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 7h11v10H3z" />
+                            <path d="M14 10h4l3 3v4h-7z" />
+                            <circle cx="7" cy="17.5" r="1.6" />
+                            <circle cx="17" cy="17.5" r="1.6" />
+                        </svg>
+                        Ships from Amazon Clone
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 9a8 8 0 1 1 .6 5" />
+                            <path d="M4 4v5h5" />
+                        </svg>
+                        30-day returns
+                    </li>
+                </ul>
+
+            </aside>
 
         </div>
 
     </div>
-</body>
 
-</html>
+</main>

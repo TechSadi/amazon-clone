@@ -1,225 +1,270 @@
 /**
  * Checkout page behaviour.
  *
- * The order summary and the place-order button only exist when the cart
- * has items, so every lookup here is guarded.
+ * The summary and the place-order button only exist when the cart has
+ * items, so every lookup is guarded.
  */
-const MAX_QUANTITY = 100;
+(function () {
+    'use strict';
 
-function setText(selector, value) {
-    const element = document.querySelector(selector);
+    var App = window.App;
 
-    if (element) {
-        element.textContent = value;
-    }
-}
+    // Rendered by the server so the client and the model cannot drift.
+    var list = App.$('.js-checkout-list');
 
-/** Applies one server response to the whole order summary. */
-function applyOrderSummary(data) {
-    if (data.cartQuantity !== undefined) {
-        setText('.js-return-to-home-link', `${data.cartQuantity} items`);
-        setText(
-            '.js-payment-summary-cart-items',
-            `Items (${data.cartQuantity}):`
-        );
-    }
+    var MAX_QUANTITY = list ? Number(list.dataset.maxQuantity) || 100 : 100;
 
-    if (data.subtotal !== undefined) {
-        setText('.js-payment-summary-money', `$${data.subtotal}`);
-    }
-
-    if (data.totalShippingCost !== undefined) {
-        setText('.js-shipping-handling', `$${data.totalShippingCost}`);
-    }
-
-    setText('.js-total-before-tax', `$${data.totalBeforeTax}`);
-    setText('.js-estimated-tax', `$${data.estimatedTax}`);
-    setText('.js-order-total', `$${data.orderTotal}`);
-}
-
-document.querySelectorAll('.js-update-quantity-link').forEach((link) => {
-    link.addEventListener('click', () => {
-        const { productId } = link.dataset;
-
-        const container = document.querySelector(
-            `.js-cart-item-container-${productId}`
-        );
-
-        if (container) {
-            container.classList.add('is-editing-quantity');
+    /** Applies one server response to the whole order summary. */
+    function applySummary(data) {
+        if (data.cartQuantity !== undefined) {
+            App.setCartQuantity(data.cartQuantity);
         }
+
+        var money = {
+            '.js-subtotal': data.subtotal,
+            '.js-shipping': data.totalShippingCost,
+            '.js-total-before-tax': data.totalBeforeTax,
+            '.js-estimated-tax': data.estimatedTax,
+            '.js-order-total': data.orderTotal
+        };
+
+        Object.keys(money).forEach(function (selector) {
+            if (money[selector] === undefined) {
+                return;
+            }
+
+            App.$$(selector).forEach(function (element) {
+                element.textContent = '$' + money[selector];
+            });
+        });
+    }
+
+    function itemCard(productId) {
+        return App.$(
+            '.js-checkout-item[data-product-id="' + productId + '"]'
+        );
+    }
+
+    function inCard(productId, selector) {
+        var card = itemCard(productId);
+
+        return card ? App.$$(selector, card) : [];
+    }
+
+    function syncStepperBounds(productId, quantity) {
+        inCard(productId, '.js-decrease').forEach(function (button) {
+            button.disabled = quantity <= 1;
+        });
+
+        inCard(productId, '.js-increase').forEach(function (button) {
+            button.disabled = quantity >= MAX_QUANTITY;
+        });
+    }
+
+    function currentQuantity(productId) {
+        var element = inCard(productId, '.js-quantity')[0];
+        var quantity = element ? Number(element.textContent) : 1;
+
+        return Number.isInteger(quantity) && quantity > 0 ? quantity : 1;
+    }
+
+    /* ----------------------------------------------------------------
+       Quantity
+
+       The endpoint takes an absolute quantity, so the stepper sends the
+       value it wants rather than a delta.
+       ---------------------------------------------------------------- */
+
+    App.$$('.js-increase, .js-decrease').forEach(function (button) {
+        button.addEventListener('click', async function () {
+            var productId = button.dataset.productId;
+            var card = itemCard(productId);
+
+            var newQuantity =
+                currentQuantity(productId) +
+                (button.classList.contains('js-increase') ? 1 : -1);
+
+            if (newQuantity < 1 || newQuantity > MAX_QUANTITY) {
+                return;
+            }
+
+            inCard(productId, '.stepper__button').forEach(function (element) {
+                element.disabled = true;
+            });
+
+            if (card) {
+                card.classList.add('is-busy');
+            }
+
+            try {
+                var data = await App.api('/checkout/' + productId, {
+                    method: 'PATCH',
+                    body: { newQuantity: newQuantity }
+                });
+
+                if (!data) {
+                    return;
+                }
+
+                inCard(productId, '.js-quantity').forEach(function (element) {
+                    element.textContent = data.itemQuantity;
+                });
+
+                inCard(productId, '.js-item-price').forEach(function (element) {
+                    element.textContent = '$' + data.cartItemPrice;
+                });
+
+                applySummary(data);
+                syncStepperBounds(productId, data.itemQuantity);
+            } catch (error) {
+                App.toast({ message: error.message, type: 'error' });
+                syncStepperBounds(productId, currentQuantity(productId));
+            } finally {
+                if (card) {
+                    card.classList.remove('is-busy');
+                }
+            }
+        });
     });
-});
 
-document.querySelectorAll('.js-save-link').forEach((link) => {
-    link.addEventListener('click', async () => {
-        const { productId } = link.dataset;
+    /* ----------------------------------------------------------------
+       Removal
+       ---------------------------------------------------------------- */
 
-        const container = document.querySelector(
-            `.js-cart-item-container-${productId}`
-        );
+    App.$$('.js-remove-item').forEach(function (button) {
+        button.addEventListener('click', async function () {
+            var productId = button.dataset.productId;
+            var name = button.dataset.productName || 'Item';
 
-        const quantityInput = document.querySelector(
-            `.js-quantity-input-${productId}`
-        );
-
-        if (!quantityInput) {
-            return;
-        }
-
-        const newQuantity = Number(quantityInput.value);
-
-        // The server validates this too; this check just avoids a
-        // pointless round trip and gives immediate feedback.
-        if (
-            !Number.isInteger(newQuantity) ||
-            newQuantity < 1 ||
-            newQuantity > MAX_QUANTITY
-        ) {
-            window.alert(
-                `Quantity must be a whole number between 1 and ${MAX_QUANTITY}.`
-            );
-            return;
-        }
-
-        try {
-            const data = await window.apiFetch(`/checkout/${productId}`, {
-                method: 'PATCH',
-                body: { newQuantity }
+            var data = await App.submit(button, function () {
+                return App.api('/checkout/' + productId, {
+                    method: 'DELETE'
+                });
             });
 
             if (!data) {
                 return;
             }
 
-            setText(`.js-quantity-label-${productId}`, data.itemQuantity);
-            setText(
-                `.js-product-price-${productId}`,
-                `$ ${data.cartItemPrice}`
-            );
-
-            applyOrderSummary(data);
-
-            if (container) {
-                container.classList.remove('is-editing-quantity');
-            }
-        } catch (error) {
-            window.alert(error.message);
-        }
-    });
-});
-
-document.querySelectorAll('.js-delete-link').forEach((link) => {
-    link.addEventListener('click', async () => {
-        const { productId } = link.dataset;
-
-        try {
-            const data = await window.apiFetch(`/checkout/${productId}`, {
-                method: 'DELETE'
-            });
-
-            if (!data) {
-                return;
-            }
-
-            const container = document.querySelector(
-                `.js-cart-item-container-${productId}`
-            );
-
-            if (container) {
-                container.remove();
-            }
-
-            // The summary and place-order button are gone once the cart
-            // is empty, so re-render from the server.
+            // The summary and the place-order button are gone once the
+            // cart is empty, so re-render from the server.
             if (data.cartQuantity === 0) {
                 window.location.reload();
                 return;
             }
 
-            applyOrderSummary(data);
-        } catch (error) {
-            window.alert(error.message);
-        }
+            var card = itemCard(productId);
+
+            if (card && card.parentNode) {
+                card.parentNode.removeChild(card);
+            }
+
+            applySummary(data);
+
+            App.toast({
+                message: name + ' removed from your order',
+                type: 'info'
+            });
+        });
     });
-});
 
-document.querySelectorAll('.js-delivery-option').forEach((element) => {
-    element.addEventListener('click', async () => {
-        const { productId, deliveryOptionId } = element.dataset;
+    /* ----------------------------------------------------------------
+       Delivery option
+       ---------------------------------------------------------------- */
 
-        try {
-            const data = await window.apiFetch(
-                `/checkout/${productId}/delivery-option`,
-                {
-                    method: 'PATCH',
-                    body: { deliveryOptionId }
+    App.$$('.js-delivery-option').forEach(function (input) {
+        input.addEventListener('change', async function () {
+            var productId = input.dataset.productId;
+
+            // Remembered so the choice can be put back if the server
+            // refuses it.
+            var previous = App.$$(
+                '.js-delivery-option[data-product-id="' + productId + '"]'
+            ).filter(function (candidate) {
+                return candidate.dataset.wasChecked === 'true';
+            })[0];
+
+            try {
+                var data = await App.api(
+                    '/checkout/' + productId + '/delivery-option',
+                    {
+                        method: 'PATCH',
+                        body: { deliveryOptionId: input.value }
+                    }
+                );
+
+                if (!data) {
+                    return;
                 }
-            );
 
-            if (!data) {
+                applySummary(data);
+
+                inCard(productId, '.js-delivery-date').forEach(
+                    function (element) {
+                        element.textContent =
+                            'Delivery date: ' + data.deliveryDate;
+                    }
+                );
+
+                markChecked(productId, input);
+            } catch (error) {
+                App.toast({ message: error.message, type: 'error' });
+
+                if (previous) {
+                    previous.checked = true;
+                }
+            }
+        });
+    });
+
+    function markChecked(productId, input) {
+        App.$$(
+            '.js-delivery-option[data-product-id="' + productId + '"]'
+        ).forEach(function (candidate) {
+            candidate.dataset.wasChecked =
+                candidate === input ? 'true' : 'false';
+        });
+    }
+
+    // Record what the server rendered as selected.
+    App.$$('.js-delivery-option').forEach(function (input) {
+        input.dataset.wasChecked = input.checked ? 'true' : 'false';
+    });
+
+    /* ----------------------------------------------------------------
+       Place the order
+       ---------------------------------------------------------------- */
+
+    var placeOrderButton = App.$('.js-place-order');
+    var orderOverlay = App.$('.js-order-overlay');
+
+    if (placeOrderButton) {
+        placeOrderButton.addEventListener('click', async function () {
+            if (placeOrderButton.disabled) {
                 return;
             }
 
-            applyOrderSummary(data);
-
-            setText(
-                `.js-delivery-date-${productId}`,
-                `Delivery date: ${data.deliveryDate}`
-            );
-        } catch (error) {
-            window.alert(error.message);
-        }
-    });
-});
-
-const placeOrderButton = document.querySelector('.js-place-order-button');
-const placeOrderText = document.querySelector('.js-place-order-text');
-const successOverlay = document.querySelector('.js-order-success-overlay');
-
-if (placeOrderButton) {
-    placeOrderButton.addEventListener('click', async () => {
-        // Was `.disable`, which is always undefined, so the guard never
-        // fired. The button is disabled below and the server refuses a
-        // second order for the same cart regardless.
-        if (placeOrderButton.disabled) {
-            return;
-        }
-
-        placeOrderButton.disabled = true;
-        placeOrderButton.classList.add('loading');
-
-        if (placeOrderText) {
-            placeOrderText.textContent = 'Placing your order...';
-        }
-
-        try {
-            const data = await window.apiFetch('/checkout/place-order', {
-                method: 'POST'
+            var data = await App.submit(placeOrderButton, function () {
+                return App.api('/checkout/place-order', { method: 'POST' });
             });
 
             if (!data) {
                 return;
             }
 
-            placeOrderButton.classList.remove('loading');
+            // Stays disabled from here on: the order exists, and the
+            // page is about to be replaced.
+            placeOrderButton.disabled = true;
 
-            if (successOverlay) {
-                successOverlay.classList.add('active');
+            if (orderOverlay) {
+                orderOverlay.classList.add('is-active');
             }
 
-            setTimeout(() => {
+            window.setTimeout(function () {
                 window.location.href = '/orders';
-            }, 1500);
-        } catch (error) {
-            window.alert(error.message);
-
-            placeOrderButton.disabled = false;
-            placeOrderButton.classList.remove('loading');
-
-            if (placeOrderText) {
-                placeOrderText.textContent = 'Place your order';
-            }
-        }
-    });
-}
+                // Long enough for the confirmation to finish drawing, and
+                // no longer. The order already exists at this point.
+            }, 900);
+        });
+    }
+})();

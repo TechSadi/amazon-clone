@@ -120,6 +120,96 @@ Then open <http://localhost:3000>.
 | `SESSION_NAME`   | no       | `amazon.sid` | Session cookie name                                |
 | `BCRYPT_ROUNDS`  | no       | `12`         | Password hashing cost (10–15)                      |
 | `TRUST_PROXY`    | no       | `false`      | Set to `true` behind a reverse proxy               |
+| `BASE_URL`       | no\*     | `http://localhost:PORT` | Public origin, used to build OAuth redirect URIs |
+
+\* Required in production when any social sign-in provider is enabled.
+
+## Social sign-in
+
+**Google and GitHub are the supported providers.** Set up those two to
+enable social sign-in.
+
+Every provider is independent: leave its credentials blank and its
+button does not appear on the sign-in and sign-up pages. Setting only
+one half of a credential pair is treated as a startup error rather than
+silently ignored.
+
+| Variable                                    | Provider |
+| ------------------------------------------- | -------- |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google   |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub   |
+
+Microsoft is also implemented and can be switched on later without any
+code change — see [Optional: Microsoft](#optional-microsoft) below. It
+is not configured, so no Microsoft button is shown.
+
+### Registering the apps
+
+The redirect URI must match what you register **exactly**, including
+scheme, port and path.
+
+**Google** — [console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials).
+Configure the OAuth consent screen, then create an *OAuth client ID* of
+type *Web application* and add the authorised redirect URI:
+
+```
+http://localhost:3000/auth/google/callback
+```
+
+**GitHub** — [github.com/settings/developers](https://github.com/settings/developers).
+*New OAuth App*. Set the Authorization callback URL to:
+
+```
+http://localhost:3000/auth/github/callback
+```
+
+In production, replace `http://localhost:3000` with your `BASE_URL` and
+register that URI as well.
+
+### Optional: Microsoft
+
+Microsoft sign-in is implemented but **not configured, and not required**.
+The application runs exactly as intended without it, and no Microsoft
+button appears while its credentials are unset.
+
+To enable it later, no code change is needed — register an app at
+[portal.azure.com](https://portal.azure.com) under *Entra ID → App
+registrations*, add a *Web* platform redirect URI, create a secret under
+*Certificates & secrets*, and set the two variables:
+
+```
+http://localhost:3000/auth/microsoft/callback
+```
+
+```env
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
+```
+
+### How accounts are matched
+
+1. If the provider account has been used here before, it signs straight in.
+2. Otherwise, if an account already exists with the same email address
+   and the provider reports that address as **verified**, the provider is
+   linked to that account. The customer keeps one cart and one order
+   history whichever way they sign in.
+3. Otherwise a new account is created.
+
+An email the provider has **not** verified is never linked or used to
+create an account. Without that rule, anyone able to register at a
+provider using someone else's address could take over the matching
+account here.
+
+An account created this way has no password. Attempting a password
+sign-in on it returns a message naming the provider to use instead.
+
+### Not implemented
+
+**Sign in with Apple** is deliberately absent. It requires a paid Apple
+Developer Program membership, a client secret that is an ES256 JWT
+signed with a downloaded `.p8` key and re-minted at least every six
+months, and a `form_post` callback that would need its own CSRF
+handling. The other three providers share one code path; Apple does not.
 
 ## Deploying
 

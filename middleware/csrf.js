@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 
 import { forbidden } from '../utils/errors.js';
+import { secureCompare } from '../utils/secureCompare.js';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -39,7 +40,7 @@ export const csrfProtection = (req, res, next) => {
             ? req.body._csrf
             : '');
 
-    if (!matches(submitted, req.session.csrfToken)) {
+    if (!secureCompare(submitted, req.session.csrfToken)) {
         return next(
             forbidden(
                 'Your session has expired or the request could not be verified. Please reload the page and try again.'
@@ -50,13 +51,3 @@ export const csrfProtection = (req, res, next) => {
     next();
 };
 
-function matches(submitted, expected) {
-    if (typeof submitted !== 'string' || submitted.length !== expected.length) {
-        return false;
-    }
-
-    return crypto.timingSafeEqual(
-        Buffer.from(submitted),
-        Buffer.from(expected)
-    );
-}

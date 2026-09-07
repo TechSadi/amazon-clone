@@ -17,6 +17,9 @@ import checkoutRoutes from './routes/checkout.js';
 import ordersRoutes from './routes/orders.js';
 import trackingRoutes from './routes/tracking.js';
 import userRoutes from './routes/users.js';
+import oauthRoutes from './routes/oauth.js';
+
+import { enabledProviders } from './services/oauthService.js';
 
 import { attachCurrentUser } from './middleware/auth.js';
 import { csrfProtection } from './middleware/csrf.js';
@@ -37,6 +40,11 @@ try {
 const app = express();
 
 app.locals.sessionCookieName = config.session.name;
+
+// Which social buttons the sign-in and sign-up pages should show. This
+// is fixed at boot by the configured credentials, so a provider without
+// credentials never renders a button that cannot work.
+app.locals.socialProviders = enabledProviders();
 
 // Required for `secure` cookies and correct client IPs behind a proxy
 // such as Render, Heroku or nginx.
@@ -122,6 +130,7 @@ app.use('/checkout', checkoutRoutes);
 app.use('/orders', ordersRoutes);
 app.use('/tracking', trackingRoutes);
 app.use('/users', userRoutes);
+app.use('/auth', oauthRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

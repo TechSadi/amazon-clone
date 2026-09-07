@@ -23,6 +23,12 @@ function required(key) {
     return value.trim();
 }
 
+function optional(key) {
+    const value = process.env[key];
+
+    return value && value.trim() ? value.trim() : '';
+}
+
 const mongoUri = required('MONGO_URI');
 const sessionSecret = required('SESSION_SECRET');
 
@@ -44,6 +50,53 @@ if (!Number.isInteger(bcryptRounds) || bcryptRounds < 10 || bcryptRounds > 15) {
     problems.push('BCRYPT_ROUNDS must be an integer between 10 and 15');
 }
 
+/**
+ * Social sign-in.
+ *
+ * Every provider is optional: the app runs perfectly well with none of
+ * them set, and a provider whose credentials are absent simply does not
+ * appear on the sign-in page. Configuring only half of a pair is
+ * treated as a mistake rather than silently ignored.
+ */
+const OAUTH_PROVIDER_NAMES = ['google', 'github', 'microsoft'];
+
+const oauth = {};
+
+OAUTH_PROVIDER_NAMES.forEach((name) => {
+    const key = name.toUpperCase();
+
+    const clientId = optional(`${key}_CLIENT_ID`);
+    const clientSecret = optional(`${key}_CLIENT_SECRET`);
+
+    if (Boolean(clientId) !== Boolean(clientSecret)) {
+        problems.push(
+            `${key}_CLIENT_ID and ${key}_CLIENT_SECRET must both be set, or both be left empty`
+        );
+    }
+
+    oauth[name] = Object.freeze({
+        clientId,
+        clientSecret,
+        enabled: Boolean(clientId && clientSecret)
+    });
+});
+
+const anyOauthEnabled = OAUTH_PROVIDER_NAMES.some(
+    (name) => oauth[name].enabled
+);
+
+const baseUrl = (
+    optional('BASE_URL') || `http://localhost:${port}`
+).replace(/\/+$/, '');
+
+// The redirect URI registered with each provider is absolute, so in
+// production it cannot be guessed from the request.
+if (anyOauthEnabled && IS_PRODUCTION && !optional('BASE_URL')) {
+    problems.push(
+        'BASE_URL must be set in production when social sign-in is enabled'
+    );
+}
+
 if (problems.length > 0) {
     console.error('Configuration error. The application cannot start:');
 
@@ -60,6 +113,7 @@ const config = Object.freeze({
     port,
     mongoUri,
     bcryptRounds,
+    baseUrl,
 
     session: Object.freeze({
         secret: sessionSecret,
@@ -68,7 +122,9 @@ const config = Object.freeze({
         // Required when running behind a reverse proxy (Render, Heroku,
         // nginx) so secure cookies are not dropped.
         trustProxy: process.env.TRUST_PROXY === 'true' || IS_PRODUCTION
-    })
+    }),
+
+    oauth: Object.freeze(oauth)
 });
 
 export default config;

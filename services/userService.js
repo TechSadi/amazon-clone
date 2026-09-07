@@ -53,13 +53,37 @@ export async function registerUser({ name, email, password }) {
     }
 }
 
+const PROVIDER_LABELS = {
+    google: 'Google',
+    github: 'GitHub',
+    microsoft: 'Microsoft'
+};
+
 export async function authenticate(email, password) {
-    const user = await User.findOne({ email }).select('+password name email');
+    const user = await User.findOne({ email }).select(
+        '+password name email authProviders'
+    );
 
     if (!user) {
         await bcrypt.compare(password, await getDummyHash());
 
         throw unauthorized('Incorrect email or password.');
+    }
+
+    // An account created through a social provider has no password at
+    // all. Saying so is far more useful than "incorrect password" to
+    // someone who never chose one, and the registration form already
+    // discloses whether an address is taken.
+    if (!user.password) {
+        const labels = user.authProviders
+            .map((entry) => PROVIDER_LABELS[entry.provider])
+            .filter(Boolean);
+
+        throw unauthorized(
+            labels.length > 0
+                ? `This account signs in with ${labels.join(' or ')}. Use the "Continue with ${labels[0]}" button below.`
+                : 'Incorrect email or password.'
+        );
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);

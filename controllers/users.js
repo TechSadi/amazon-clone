@@ -4,9 +4,16 @@ import {
     validateRegistration
 } from '../validators/userValidator.js';
 import { AppError } from '../utils/errors.js';
+import { safeReturnTo } from '../utils/redirects.js';
 
 export const loadLogin = (req, res) => {
-    res.render('users/login', { error: null, formData: {} });
+    // A failed social sign-in leaves its message here rather than in the
+    // query string, so it can be shown once without being reflectable.
+    const error = req.session.authError || null;
+
+    delete req.session.authError;
+
+    res.render('users/login', { error, formData: {} });
 };
 
 export const loadRegister = (req, res) => {
@@ -121,14 +128,3 @@ function isClientError(error) {
  * be treated as untrusted: without this check a link could send someone
  * through our sign-in form and out to an attacker's site.
  */
-function safeReturnTo(candidate) {
-    if (
-        typeof candidate === 'string' &&
-        candidate.startsWith('/') &&
-        !candidate.startsWith('//')
-    ) {
-        return candidate;
-    }
-
-    return '/products';
-}

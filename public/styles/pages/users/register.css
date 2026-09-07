@@ -347,3 +347,13 @@ a:hover {
     }
 
 }
+/* The social buttons are links, not buttons: they navigate to the
+   provider and work without JavaScript. These rules give an anchor
+   the same centred layout a button had by default. */
+a.social-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #111;
+}

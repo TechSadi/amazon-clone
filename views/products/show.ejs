@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Amazon Project</title>
+
+    <!-- This code is needed for responsive design to work.
+      (Responsive design = make the website look good on
+      smaller screen sizes like a phone or a tablet). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Load a font called Roboto from Google Fonts. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Here are the CSS files for this page. -->
+    <link rel="stylesheet" href="/styles/shared/general.css">
+    <link rel="stylesheet" href="/styles/shared/amazon-header.css">
+    <link rel="stylesheet" href="/styles/pages/amazon.css">
+    <link rel="stylesheet" href="/styles/pages/notfound.css">
+    <link rel="stylesheet" href="/styles/pages/show.css">
+    <script src="/scripts/index.js" defer></script>
+    <script src="/scripts/show.js" defer></script>
+</head>
+
+<body>
+    <div class="amazon-header">
+        <div class="amazon-header-left-section">
+            <a href="/products" class="header-link">
+                <img class="amazon-logo" src="/images/amazon-logo-white.png">
+                <img class="amazon-mobile-logo" src="/images/amazon-mobile-logo-white.png">
+            </a>
+        </div>
+
+        <div class="amazon-header-middle-section">
+            <form class="search-form" action="/products" method="GET">
+                <input class="search-bar js-search-bar" name="q" type="text" placeholder="Search">
+                <button class="search-button js-search-button" type="submit">
+                    <img class="search-icon" src="/images/icons/search-icon.png">
+                </button>
+            </form>
+
+        </div>
+
+        <div class="amazon-header-right-section">
+
+            <% if (currentUser) { %>
+
+                <div class="account-link header-link">
+
+                    <span class="returns-text">
+                        Hello, <%= currentUser.name %>
+                    </span>
+
+                    <form action="/users/logout" method="POST">
+                        <button type="submit" class="account-action-button">
+                            Sign out
+                        </button>
+                    </form>
+
+                </div>
+
+                <% } else { %>
+
+                    <a class="account-link header-link" href="/users/login">
+
+                        <span class="returns-text">
+                            Hello, Guest
+                        </span>
+
+                        <span class="orders-text">
+                            Sign in
+                        </span>
+
+                    </a>
+
+                    <% } %>
+
+
+                        <a class="orders-link header-link" href="/orders">
+                            <span class="returns-text">
+                                Returns
+                            </span>
+
+                            <span class="orders-text">
+                                & Orders
+                            </span>
+                        </a>
+
+
+                        <a class="cart-link header-link" href="/cart">
+
+                            <img class="cart-icon" src="/images/icons/cart-icon.png">
+
+                            <div class="cart-quantity js-cart-quantity">
+                                <%= cartQuantity %>
+                            </div>
+
+                            <div class="cart-text">
+                                Cart
+                            </div>
+
+                        </a>
+
+        </div>
+    </div>
+
+    <div class="main">
+
+        <div class="product-page">
+
+            <!-- LEFT: PRODUCT IMAGE -->
+            <div class="product-image-section">
+                <img class="main-product-image" src="/<%= product.image %>" alt="Product Image">
+
+                <div class="full-view-text">
+                    Click to see full view
+                </div>
+            </div>
+
+            <!-- MIDDLE: PRODUCT DETAILS -->
+            <div class="product-details-section">
+
+                <h1 class="product-title">
+                    <%= product.name %>
+                </h1>
+
+                <a href="#" class="store-link">
+                </a>
+
+                <div class="product-rating">
+                    <span class="rating-number">4.6</span>
+
+                    <span class="stars">
+                        ★★★★★
+                    </span>
+
+                    <a href="#" class="rating-count">
+                        <%= product.rating.count %>
+                    </a>
+                </div>
+
+                <div class="choice-badge">
+                    Amazon's Choice
+                </div>
+
+                <div class="bought-text">
+                    6K+ bought in past month
+                </div>
+
+                <hr class="section-line">
+
+                <div class="product-price">
+                    <span class="currency">$</span>
+                    <% let price=Math.floor(product.priceCents / 100) %>
+                        <span class="price-whole">
+                            <%= price %>
+                        </span>
+                </div>
+
+                <div class="shipping-info">
+                    $10 Shipping & Import Charges to India
+                    <a href="#">Details</a>
+                </div>
+
+                <p class="offer-text">
+                    Available at a lower price from
+                    <a href="#">other sellers</a>
+                    that may not offer free Prime shipping.
+                </p>
+
+
+                <!-- PRODUCT OPTIONS -->
+                <div class="product-option">
+
+                    <div class="option-label">
+                        Color: <strong>Black</strong>
+                    </div>
+
+                    <div class="option-container">
+
+                        <div class="selected-option">
+                            <img src="/<%= product.image %>" alt="Black product">
+
+                            <span>$<%= price%></span>
+                        </div>
+
+                        <button class="offers-button">
+                            See 1 options with no featured offers
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PRODUCT INFORMATION -->
+                <div class="product-information">
+
+                    <div class="info-row">
+                        <div class="info-label">Color</div>
+                        <div class="info-value">Black</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">Material</div>
+                        <div class="info-value">
+                            <%= product.name %>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">Brand</div>
+                        <div class="info-value">brand name</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">Item Weight</div>
+                        <div class="info-value">4.8 pounds</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">Item dimensions</div>
+                        <div class="info-value">Dimesions</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RIGHT: BUY BOX -->
+            <div class="buy-box">
+
+                <div class="buy-price">
+                    <span class="currency">$</span>
+                    <span class="price-whole">
+                        <%= price %>
+                    </span>
+                </div>
+
+                <p class="import-charges">
+                    $10 Shipping & Import Charges to India
+                    <span class="dropdown-arrow">⌄</span>
+                </p>
+
+                <p class="delivery-price">
+                    $ 12 delivery
+                </p>
+
+                <p class="delivery-date">
+                    <strong>September 4 - 18</strong>
+                </p>
+
+                <div class="delivery-location">
+                    📍 Deliver to India
+                </div>
+
+                <div class="added-to-cart js-added-to-cart-<%= product._id %>">
+                    <img src="/images/icons/checkmark.png">
+                    Added
+                </div>
+
+                <button type="button" class="add-to-cart-button button-primary js-add-to-cart"
+                    data-product-id="<%= product._id %>">
+                    Add to Cart
+                </button>
+                <a href="/checkout">
+                    <button class="buy-now-button">
+                        Buy Now
+                    </button>
+                </a>
+
+                <div class="buy-info">
+
+                    <div class="buy-info-row">
+                        <span>Shipper / Seller</span>
+                        <span>Amazon.com</span>
+                    </div>
+
+                    <div class="buy-info-row">
+                        <span>Returns</span>
+                        <a href="#">30-day refund / replacement</a>
+                    </div>
+
+                    <div class="buy-info-row">
+                        <span>Payment</span>
+                        <a href="#">Secure transaction</a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Amazon Project</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/styles/shared/general.css">
+    <link rel="stylesheet" href="/styles/shared/amazon-header.css">
+    <link rel="stylesheet" href="/styles/pages/amazon.css">
+    <link rel="stylesheet" href="/styles/pages/notfound.css">
+    <link rel="stylesheet" href="/styles/pages/cart.css">
+
+    <script src="/scripts/index.js" defer></script>
+    <script src="/scripts/cart.js" defer></script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="amazon-header">
+
+        <div class="amazon-header-left-section">
+
+            <a href="/products" class="header-link">
+
+                <img class="amazon-logo" src="/images/amazon-logo-white.png">
+
+                <img class="amazon-mobile-logo" src="/images/amazon-mobile-logo-white.png">
+
+            </a>
+
+        </div>
+
+
+        <div class="amazon-header-middle-section">
+
+            <form class="search-form" action="/products" method="GET">
+
+                <input class="search-bar js-search-bar" name="q" type="text" placeholder="Search">
+
+                <button class="search-button js-search-button" type="submit">
+
+                    <img class="search-icon" src="/images/icons/search-icon.png">
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <div class="amazon-header-right-section">
+        
+            <% if (currentUser) { %>
+        
+                <div class="account-link header-link">
+        
+                    <span class="returns-text">
+                        Hello, <%= currentUser.name %>
+                    </span>
+        
+                    <form action="/users/logout" method="POST">
+                        <button type="submit" class="account-action-button">
+                            Sign out
+                        </button>
+                    </form>
+        
+                </div>
+        
+                <% } else { %>
+        
+                    <a class="account-link header-link" href="/users/login">
+        
+                        <span class="returns-text">
+                            Hello, Guest
+                        </span>
+        
+                        <span class="orders-text">
+                            Sign in
+                        </span>
+        
+                    </a>
+        
+                    <% } %>
+        
+        
+                        <a class="orders-link header-link" href="/orders">
+                            <span class="returns-text">
+                                Returns
+                            </span>
+        
+                            <span class="orders-text">
+                                & Orders
+                            </span>
+                        </a>
+        
+        
+                        <a class="cart-link header-link" href="/cart">
+        
+                            <img class="cart-icon" src="/images/icons/cart-icon.png">
+        
+                            <div class="cart-quantity js-cart-quantity">
+                                <%= cartQuantity %>
+                            </div>
+        
+                            <div class="cart-text">
+                                Cart
+                            </div>
+        
+                        </a>
+        
+        </div>
+
+    </div>
+
+
+    <!-- Cart Page -->
+    <div class="cart-page">
+
+        <div class="cart-container">
+
+            <!-- Empty Cart -->
+            <% if (!cart || cart.items.length===0) { %>
+
+                <div class="cart-items-section">
+
+                    <h1 class="cart-title">
+                        Shopping Cart
+                    </h1>
+
+                    <p class="empty-cart-message">
+                        Your Amazon Cart is empty.
+                    </p>
+                    <a href="/products">
+                        <button class="go-to-products">
+                            Go to products
+                        </button>
+                    </a>
+
+                </div>
+
+
+                <!-- Cart Has Items -->
+                <% } else { %>
+
+                    <div class="cart-items-section">
+
+                        <h1 class="cart-title">
+                            Shopping Cart
+                        </h1>
+
+
+                        <% let totalPrice=0; %>
+
+
+                            <% cart.items.forEach((item)=> { %>
+
+                                <% totalPrice +=item.product.priceCents * item.quantity; %>
+
+
+                                    <div class="cart-item js-cart-item-<%= item.product._id %>">
+
+                                        <div class="cart-item-image-container">
+
+                                            <img src="<%= item.product.image %>" alt="<%= item.product.name %>"
+                                                class="cart-item-image">
+
+                                        </div>
+
+
+                                        <div class="cart-item-details">
+
+                                            <div class="cart-item-info">
+
+                                                <div>
+
+                                                    <h2 class="cart-item-name">
+                                                        <%= item.product.name %>
+                                                    </h2>
+
+                                                    <p class="stock-status">
+                                                        In Stock
+                                                    </p>
+
+                                                </div>
+
+
+                                                <div class="cart-item-price">
+
+                                                    $
+                                                    <%= ( item.product.priceCents / 100 ).toFixed(2) %>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="cart-item-actions">
+
+                                                <!-- Quantity Selector -->
+
+                                                <div class="quantity-selector">
+
+                                                    <button class="quantity-button decrease-button js-decrease-button"
+                                                        data-product-id="<%= item.product._id %>">
+                                                        −
+                                                    </button>
+
+
+                                                    <span class="quantity js-quantity-<%= item.product._id %>">
+                                                        <%= item.quantity %>
+                                                    </span>
+
+
+                                                    <button class="quantity-button increase-button js-increase-button"
+                                                        data-product-id="<%= item.product._id %>">
+                                                        +
+                                                    </button>
+
+                                                </div>
+
+
+                                                <button class="delete-button js-delete-button"
+                                                    data-product-id="<%= item.product._id %>">
+                                                    Delete
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <% }); %>
+
+
+                                        <!-- Subtotal -->
+
+                                        <div class="cart-subtotal">
+
+                                            Subtotal (
+
+                                            <span class="js-bottom-cart-quantity">
+                                                <%= cartQuantity %>
+                                            </span>
+
+                                            items):
+
+                                            <% const finalPrice=(totalPrice / 100).toFixed(2); %>
+
+                                                <strong>
+
+                                                    $
+
+                                                    <span class="js-bottom-subtotal">
+                                                        <%= finalPrice %>
+                                                    </span>
+
+                                                </strong>
+
+                                        </div>
+
+                    </div>
+
+
+                    <!-- Checkout Section -->
+
+                    <div class="checkout-section">
+
+                        <div class="checkout-summary">
+
+                            <div class="checkout-subtotal">
+
+                                Subtotal (
+
+                                <span class="js-right-cart-quantity">
+                                    <%= cartQuantity %>
+                                </span>
+
+                                items):
+
+                                <strong>
+
+                                    $
+
+                                    <span class="js-right-subtotal">
+                                        <%= finalPrice %>
+                                    </span>
+
+                                </strong>
+
+                            </div>
+
+                                <button class="checkout-button js-checkout-button">
+                                    Proceed to checkout
+                                </button>
+
+
+                            <a href="/products">
+
+                                <button class="products-button">
+                                    Add more products
+                                </button>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <% } %>
+
+        </div>
+
+    </div>
+
+
+    <!-- Cart Toast -->
+    <div class="cart-toast js-cart-toast">
+        <span class="js-cart-toast-message"></span>
+        
+        <button class="undo-button js-undo-button">Undo</button>
+    </div>
+
+    <!-- Checkout loading overlay -->
+    <div class="checkout-loading-overlay js-checkout-loading-overlay">
+    
+        <div class="checkout-loading-box">
+    
+            <div class="checkout-spinner"></div>
+    
+            <h2 class="checkout-loading-title">
+                Preparing your checkout
+            </h2>
+    
+            <p class="checkout-loading-message">
+                Just a moment...
+            </p>
+    
+        </div>
+    
+    </div>
+
+</body>
+
+</html>

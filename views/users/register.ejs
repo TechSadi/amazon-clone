@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create your account</title>
+
+    <link rel="stylesheet" href="/styles/pages/users/register.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script src="/scripts/users/register.js" defer></script>
+</head>
+
+<body>
+
+    <main class="auth-page">
+
+        <a href="/products" class="logo-container">
+
+            <img src="/images/amazon-logo-white.png" alt="Amazon" class="amazon-logo">
+
+        </a>
+
+
+        <section class="auth-card">
+
+            <div class="auth-header">
+
+                <h1>Create your account</h1>
+
+                <p>
+                    Join us and start shopping.
+                </p>
+
+            </div>
+
+
+            <% if (error) { %>
+
+                <div class="server-error">
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 7v5"></path>
+                        <circle cx="12" cy="16.5" r="1"></circle>
+                    </svg>
+
+                    <span>
+                        <%= error %>
+                    </span>
+
+                </div>
+
+                <% } %>
+
+
+                    <form action="/users/register" method="POST" id="register-form" novalidate>
+
+                        <!-- NAME -->
+
+                        <div class="form-group">
+
+                            <label for="name">
+                                Your name
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="4"></circle>
+                                    <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>
+                                </svg>
+
+                                <input type="text" id="name" name="name" placeholder="First and last name"
+                                    value="<%= formData?.name || '' %>" autocomplete="name">
+
+                            </div>
+
+                            <p class="field-message" id="name-error"></p>
+
+                        </div>
+
+
+                        <!-- EMAIL -->
+
+                        <div class="form-group">
+
+                            <label for="email">
+                                Email
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+
+                                    <path d="M3 7l9 6 9-6"></path>
+                                </svg>
+
+                                <input type="email" id="email" name="email" placeholder="Enter your email"
+                                    value="<%= formData?.email || '' %>" autocomplete="email">
+
+                            </div>
+
+                            <p class="field-message" id="email-error"></p>
+
+                        </div>
+
+
+                        <!-- PASSWORD -->
+
+                        <div class="form-group">
+
+                            <label for="password">
+                                Password
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+
+                                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                                </svg>
+
+                                <input type="password" id="password" name="password" placeholder="At least 6 characters"
+                                    autocomplete="new-password">
+
+                                <button type="button" class="toggle-password" data-target="password"
+                                    aria-label="Show password">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+
+                            </div>
+
+                            <div class="password-hint">
+
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <path d="M12 10v5"></path>
+                                    <circle cx="12" cy="7" r="1"></circle>
+                                </svg>
+
+                                <span>
+                                    Password must be at least 6 characters.
+                                </span>
+
+                            </div>
+
+                            <p class="field-message" id="password-error"></p>
+
+                        </div>
+
+
+                        <!-- CONFIRM PASSWORD -->
+
+                        <div class="form-group">
+
+                            <label for="confirmPassword">
+                                Re-enter password
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+
+                                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                                </svg>
+
+                                <input type="password" id="confirmPassword" name="confirmPassword"
+                                    placeholder="Re-enter your password" autocomplete="new-password">
+
+                                <button type="button" class="toggle-password" data-target="confirmPassword"
+                                    aria-label="Show password">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+
+                            </div>
+
+                            <p class="field-message" id="confirmPassword-error"></p>
+
+                        </div>
+
+
+                        <button type="submit" class="create-account-button">
+                            <span>Create account</span>
+                        </button>
+
+                    </form>
+
+
+                    <p class="terms-text">
+
+                        By creating an account, you agree to our
+
+                        <a href="#">
+                            Conditions of Use
+                        </a>
+
+                        and
+
+                        <a href="#">
+                            Privacy Notice
+                        </a>.
+
+                    </p>
+
+
+                    <!-- SOCIAL SIGNUP -->
+
+                    <div class="divider">
+
+                        <span>or sign up with</span>
+
+                    </div>
+
+
+                    <div class="social-buttons">
+
+                        <button type="button" class="social-button">
+
+                            <!-- Google -->
+
+                            <svg class="social-icon" viewBox="0 0 24 24">
+                                <path fill="#4285F4"
+                                    d="M21.35 12.27c0-.79-.07-1.55-.2-2.27H12v4.3h5.23a4.47 4.47 0 0 1-1.94 2.94v2.78h3.14c1.84-1.69 2.92-4.18 2.92-7.75z" />
+
+                                <path fill="#34A853"
+                                    d="M12 21.75c2.63 0 4.84-.87 6.45-2.36l-3.14-2.78c-.87.58-1.98.92-3.31.92-2.55 0-4.71-1.72-5.48-4.03H3.28v2.87A9.75 9.75 0 0 0 12 21.75z" />
+
+                                <path fill="#FBBC05"
+                                    d="M6.52 13.5A5.86 5.86 0 0 1 6.21 12c0-.52.09-1.02.31-1.5V7.63H3.28A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.03 4.37l3.24-2.87z" />
+
+                                <path fill="#EA4335"
+                                    d="M12 6.47c1.43 0 2.72.49 3.73 1.45l2.8-2.8C16.83 3.53 14.62 2.25 12 2.25A9.75 9.75 0 0 0 3.28 7.63l3.24 2.87C7.29 8.19 9.45 6.47 12 6.47z" />
+                            </svg>
+
+                            <span>Continue with Google</span>
+
+                        </button>
+
+
+                        <button type="button" class="social-button">
+
+                            <!-- GitHub -->
+
+                            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 .7a11.3 11.3 0 0 0-3.57 22c.56.1.77-.24.77-.54v-2.1c-3.14.68-3.8-1.34-3.8-1.34-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.22.71-1.5-2.51-.29-5.15-1.26-5.15-5.6 0-1.24.44-2.25 1.16-3.05-.12-.29-.5-1.45.11-3.02 0 0 .95-.3 3.1 1.16a10.8 10.8 0 0 1 5.64 0c2.15-1.46 3.1-1.16 3.1-1.16.61 1.57.23 2.73.11 3.02.72.8 1.16 1.81 1.16 3.05 0 4.35-2.64 5.3-5.16 5.59.4.35.76 1.04.76 2.1v3.12c0 .3.2.65.78.54A11.3 11.3 0 0 0 12 .7z" />
+                            </svg>
+
+                            <span>Continue with GitHub</span>
+
+                        </button>
+
+
+                        <button type="button" class="social-button">
+
+                            <!-- Microsoft -->
+
+                            <svg class="social-icon" viewBox="0 0 24 24">
+                                <path fill="#f25022" d="M1 1h10v10H1z" />
+                                <path fill="#7fba00" d="M13 1h10v10H13z" />
+                                <path fill="#00a4ef" d="M1 13h10v10H1z" />
+                                <path fill="#ffb900" d="M13 13h10v10H13z" />
+                            </svg>
+
+                            <span>Continue with Microsoft</span>
+
+                        </button>
+
+
+                        <button type="button" class="social-button">
+
+                            <!-- Apple -->
+
+                            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M16.7 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.9-1.5 0-2.9.9-3.7 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.3 2.9 2.2 1.1 0 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-.9 2.8-2 .9-1.3 1.3-2.6 1.3-2.7-.1 0-2.6-1-2.6-3.8zM14.4 5.9c.7-.9 1.1-2.1 1-3.4-1.1 0-2.4.7-3.1 1.6-.6.7-1.1 1.9-1 3.1 1.2.1 2.4-.6 3.1-1.3z" />
+                            </svg>
+
+                            <span>Continue with Apple</span>
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="signin-section">
+
+                        <span>
+                            Already have an account?
+                        </span>
+
+                        <a href="/users/login">
+                            Sign in
+                            <span class="arrow">›</span>
+                        </a>
+
+                    </div>
+
+        </section>
+
+
+        <footer class="auth-footer">
+
+            <div class="footer-links">
+
+                <a href="#">Conditions of Use</a>
+                <a href="#">Privacy Notice</a>
+                <a href="#">Help</a>
+
+            </div>
+
+            <p>
+                © 2026 Amazon Clone Project
+            </p>
+
+        </footer>
+
+    </main>
+
+</body>
+
+</html>

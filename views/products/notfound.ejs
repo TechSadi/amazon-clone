@@ -1,0 +1,42 @@
+<%- include('../partials/header') %>    
+<!-- PRODUCT NOT FOUND BODY -->
+    <main class="not-found-page">
+
+        <div class="not-found-content">
+
+            <div class="not-found-icon">
+                <img src="/images/icons/not-found-icon.png" alt="">
+
+            </div>
+
+            <h1>Product Not Found</h1>
+
+
+            <p class="search-result-text">
+                We couldn't find any products matching
+            </p>
+
+            <p class="search-query">
+                "<%= q %>"
+            </p>
+
+
+            <p class="suggestion-text">
+                Check the spelling, try a different search term,
+                or browse our available products.
+            </p>
+
+
+            <div class="not-found-buttons">
+
+                <a href="/products" class="continue-shopping-button">
+                    Continue Shopping
+                </a>
+
+            </div>
+
+        </div>
+
+    </main>
+
+<%- include('../partials/footer') %>

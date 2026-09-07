@@ -8,12 +8,17 @@ import {
     logoutUser
 } from '../controllers/users.js';
 
+import { requireGuest } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimit.js';
+
 const router = express.Router();
 
-router.get('/register', loadRegister);
-router.post('/register', registerUser);
-router.get('/login', loadLogin);
-router.post('/login', loginUser);
+router.get('/register', requireGuest, loadRegister);
+router.post('/register', authLimiter, requireGuest, registerUser);
+
+router.get('/login', requireGuest, loadLogin);
+router.post('/login', authLimiter, requireGuest, loginUser);
+
 router.post('/logout', logoutUser);
 
 export default router;

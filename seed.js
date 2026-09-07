@@ -1,32 +1,32 @@
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-
-import connectDB from './config/db.js';
+import connectDB, { disconnectDB } from './config/db.js';
 import Product from './models/product.js';
 import products from './data/products.js';
 
-dotenv.config();
-
+/**
+ * Replaces the product catalogue with the contents of data/products.js.
+ *
+ * Deliberately destructive and never run by the server itself: use
+ * `npm run seed`.
+ */
 const seedDatabase = async () => {
     try {
         await connectDB();
 
-        // Remove existing products
         await Product.deleteMany({});
 
-        // Insert products from data/products.js
-        await Product.insertMany(products);
+        // The source data carries a legacy `id` field that is not part
+        // of the schema; strip it so Mongo assigns real _id values.
+        const seedProducts = products.map(({ id, ...product }) => product);
 
-        console.log('Products seeded successfully!');
+        await Product.insertMany(seedProducts);
 
-        await mongoose.connection.close();
+        console.log(`${seedProducts.length} products seeded.`);
 
-        console.log('Database connection closed.');
-
+        await disconnectDB();
     } catch (error) {
-        console.error('Error seeding database:', error);
+        console.error('Error seeding database:', error.message);
 
-        await mongoose.connection.close();
+        await disconnectDB().catch(() => {});
 
         process.exit(1);
     }

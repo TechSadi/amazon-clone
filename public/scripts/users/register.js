@@ -114,11 +114,11 @@ function validatePassword() {
         return false;
     }
 
-    if (value.length < 6) {
+    if (value.length < 8) {
 
         showError(
             passwordInput,
-            'Password must be at least 6 characters.'
+            'Password must be at least 8 characters.'
         );
 
         return false;

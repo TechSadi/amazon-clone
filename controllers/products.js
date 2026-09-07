@@ -1,51 +1,34 @@
-import Product from '../models/product.js';
-import Cart from '../models/cart.js';
-import { calculateCartQuantity } from '../utils/cart.js';
+import * as productService from '../services/productService.js';
+import * as cartService from '../services/cartService.js';
+import { parseSearchQuery } from '../validators/productValidator.js';
 
 export const getAllProducts = async (req, res) => {
+    const searchTerm = parseSearchQuery(req.query.q);
 
-    const { q } = req.query;
-
-    let products;
-
-    if (q) {
-        products = await Product.find({
-            $or: [
-                {
-                    name: {
-                        $regex: q,
-                        $options: 'i'
-                    }
-                },
-                {
-                    keywords: {
-                        $regex: q,
-                        $options: 'i'
-                    }
-                }
-            ]
-        });
-    }
-    else {
-        products = await Product.find({});
-    }
-
-    const cart = await Cart.findOne({ user: req.session.userId });
-    const cartQuantity = calculateCartQuantity(cart)
+    const [products, cartQuantity] = await Promise.all([
+        productService.listProducts(searchTerm),
+        cartService.getCartQuantity(req.session.userId)
+    ]);
 
     if (products.length === 0) {
-        res.render('products/notfound', {q, cartQuantity, cart})
+        return res.render('products/notfound', {
+            q: searchTerm,
+            cartQuantity
+        });
     }
-    else {
-        res.render('products', { products, q, cartQuantity,cart})
-    }
-    
-}
+
+    res.render('products/index', {
+        products,
+        q: searchTerm,
+        cartQuantity
+    });
+};
 
 export const showProduct = async (req, res) => {
-    const cart = await Cart.findOne({ user: req.session.userId });
-    const cartQuantity = calculateCartQuantity(cart);
-    const product = await Product.findById(req.params.id);
+    const [product, cartQuantity] = await Promise.all([
+        productService.getProductById(req.params.productId),
+        cartService.getCartQuantity(req.session.userId)
+    ]);
 
-    res.render('products/show', { product, cartQuantity, cart});
-}
+    res.render('products/show', { product, cartQuantity });
+};

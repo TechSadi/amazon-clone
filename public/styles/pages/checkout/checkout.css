@@ -414,3 +414,38 @@
   }
 
 }
+/* Empty checkout state */
+.empty-checkout {
+  padding: 32px 24px;
+  background-color: #ffffff;
+  border: 1px solid #d5d9d9;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.empty-checkout-title {
+  margin: 0;
+  font-size: 20px;
+  color: #0f1111;
+}
+
+.empty-checkout-message {
+  margin: 8px 0 20px;
+  font-size: 14px;
+  color: #565959;
+}
+
+.empty-checkout-link {
+  display: inline-block;
+  padding: 9px 20px;
+  background-color: #ffd814;
+  border: 1px solid #fcd200;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0f1111;
+  text-decoration: none;
+}
+
+.empty-checkout-link:hover {
+  background-color: #f7ca00;
+}

@@ -1,48 +1,23 @@
-document.querySelectorAll('.js-buy-again-button')
-    .forEach((button) => {
+document.querySelectorAll('.js-buy-again-button').forEach((button) => {
+    button.addEventListener('click', async () => {
+        const { productId, quantity } = button.dataset;
 
-        button.addEventListener('click', async () => {
+        button.disabled = true;
 
-            const { productId, quantity } = button.dataset;
+        try {
+            const data = await window.apiFetch(`/cart/${productId}`, {
+                method: 'POST',
+                body: { quantity: Number(quantity) }
+            });
 
-            try {
-
-                const response = await fetch(
-                    `/cart/${productId}`,
-                    {
-                        method: 'POST',
-
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-
-                        body: JSON.stringify({
-                            quantity
-                        })
-                    }
-                );
-
-                const data = await response.json();
-
-                if (data.added) {
-                    window.location.href = '/cart';
-                } else {
-                    alert(data.message);
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Buy again error:',
-                    error
-                );
-
-                alert(
-                    'Something went wrong while adding the product to the cart'
-                );
-
+            if (!data) {
+                return;
             }
 
-        });
-
+            window.location.href = '/cart';
+        } catch (error) {
+            window.alert(error.message);
+            button.disabled = false;
+        }
     });
+});

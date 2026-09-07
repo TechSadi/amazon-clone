@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Checkout</title>
 
@@ -7,6 +7,8 @@
       (Responsive design = make the website look good on
       smaller screen sizes like a phone or a tablet). -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="<%= csrfToken %>">
 
     <!-- Load a font called Roboto from Google Fonts. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +19,7 @@
     <link rel="stylesheet" href="/styles/shared/general.css">
     <link rel="stylesheet" href="/styles/pages/checkout/checkout-header.css">
     <link rel="stylesheet" href="/styles/pages/checkout/checkout.css">
+    <script src="/scripts/http.js" defer></script>
     <script src="/scripts/checkout.js" defer></script>
   </head>
   <body>
@@ -54,7 +57,18 @@
 
       <div class="checkout-grid">
         <div class="order-summary">
-          <% if (cart) { %>
+          <% if (cart.items.length === 0) { %>
+
+            <div class="empty-checkout">
+              <h2 class="empty-checkout-title">Your cart is empty</h2>
+              <p class="empty-checkout-message">
+                Add something to your cart before checking out.
+              </p>
+              <a class="empty-checkout-link" href="/products">Continue shopping</a>
+            </div>
+
+          <% } %>
+
             <% cart.items.forEach((item) => { %>
                 <div class="cart-item-container js-cart-item-container
                 js-cart-item-container-<%= item.product._id%>">
@@ -63,7 +77,7 @@
                   const selectedDeliveryOption = getDeliveryOption(item.deliveryOptionId);
                 %>
                   <div class="delivery-date js-delivery-date-<%= item.product._id %>">
-                    Delivery date: <%= calculateDeliveryDate(selectedDeliveryOption) %>
+                    Delivery date: <%= deliveryDateLabel(selectedDeliveryOption) %>
                   </div>
                 
                   <div class="cart-item-details-grid">
@@ -103,7 +117,7 @@
 
                           <% 
                             const isChecked  = deliveryOption.id === item.deliveryOptionId;
-                            const deliveryDate = calculateDeliveryDate(deliveryOption);
+                            const deliveryDate = deliveryDateLabel(deliveryOption);
                           %>
 
                           <div
@@ -146,11 +160,10 @@
                   </div>
                 </div>
 
-            <%}) %>              
-          <% } %>
+            <%}) %>
         </div>
 
-        <% if (cart.items.length != 0) { %>
+        <% if (cart.items.length !== 0) { %>
         <div class="payment-summary">
           <div class="payment-summary-title">
             Order Summary
@@ -187,9 +200,9 @@
             <span class="place-order-spin js-place-order-spinner"></span>
           </button>
 
-          <% } %>
-
         </div>
+        <% } %>
+
       </div>
     </div>
 

@@ -1,15 +1,12 @@
 import express from 'express';
-import { getAllProducts } from '../controllers/products.js';
-import { showProduct } from '../controllers/products.js';
+
+import { getAllProducts, showProduct } from '../controllers/products.js';
+import { validateObjectId } from '../middleware/validate.js';
 
 const router = express.Router();
 
 router.get('/', getAllProducts);
 
-router.get('/category/:category', (req, res) => {
-    res.send('product category');
-})
-
-router.get('/:id', showProduct)
+router.get('/:productId', validateObjectId('productId'), showProduct);
 
 export default router;

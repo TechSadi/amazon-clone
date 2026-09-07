@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <title>Amazon Project</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="<%= csrfToken %>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +19,7 @@
     <link rel="stylesheet" href="/styles/pages/notfound.css">
     <link rel="stylesheet" href="/styles/pages/cart.css">
 
+    <script src="/scripts/http.js" defer></script>
     <script src="/scripts/index.js" defer></script>
     <script src="/scripts/cart.js" defer></script>
 </head>
@@ -66,7 +69,8 @@
                         Hello, <%= currentUser.name %>
                     </span>
         
-                    <form action="/users/logout" method="POST">
+                    <form action="/users/logout" method="POST" class="js-logout-form">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="account-action-button">
                             Sign out
                         </button>
@@ -157,13 +161,7 @@
                         </h1>
 
 
-                        <% let totalPrice=0; %>
-
-
                             <% cart.items.forEach((item)=> { %>
-
-                                <% totalPrice +=item.product.priceCents * item.quantity; %>
-
 
                                     <div class="cart-item js-cart-item-<%= item.product._id %>">
 
@@ -253,14 +251,12 @@
 
                                             items):
 
-                                            <% const finalPrice=(totalPrice / 100).toFixed(2); %>
-
                                                 <strong>
 
                                                     $
 
                                                     <span class="js-bottom-subtotal">
-                                                        <%= finalPrice %>
+                                                        <%= subtotal %>
                                                     </span>
 
                                                 </strong>
@@ -291,7 +287,7 @@
                                     $
 
                                     <span class="js-right-subtotal">
-                                        <%= finalPrice %>
+                                        <%= subtotal %>
                                     </span>
 
                                 </strong>

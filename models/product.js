@@ -1,43 +1,62 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const productSchema = new mongoose.Schema({
-    image: {
-        type: String,
-        required: true
-    },
-    name: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    rating: {
-        stars: {
-            type: Number,
-            min: 0,
-            max: 5
+const productSchema = new mongoose.Schema(
+    {
+        image: {
+            type: String,
+            required: true,
+            trim: true
         },
 
-        count: {
+        name: {
+            type: String,
+            required: true,
+            trim: true,
+            maxlength: 300
+        },
+
+        rating: {
+            stars: {
+                type: Number,
+                min: 0,
+                max: 5,
+                default: 0
+            },
+
+            count: {
+                type: Number,
+                min: 0,
+                default: 0
+            }
+        },
+
+        priceCents: {
             type: Number,
-            default: 0
-        }
+            required: true,
+            min: 0,
+            validate: {
+                validator: Number.isInteger,
+                message: 'Price must be a whole number of cents.'
+            }
+        },
+
+        category: {
+            type: String,
+            trim: true
+        },
+
+        keywords: [
+            {
+                type: String,
+                trim: true
+            }
+        ]
     },
-    priceCents: {
-        type: Number,
-        required: true,
-        min: 0
-    },
-    category: {
-        type: String
-    },
-    keywords: [{
-        type: String
-    }]
-},
     {
         timestamps: true
     }
 );
 
+const Product = mongoose.model('Product', productSchema);
 
-export default mongoose.model('Product', productSchema);
+export default Product;

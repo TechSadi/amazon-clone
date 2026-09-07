@@ -1,65 +1,60 @@
-
+/**
+ * Add to cart, used by both the product grid and the product page.
+ *
+ * The product page previously loaded a near-identical second copy of
+ * this file, so every click ran two handlers.
+ */
 const addedMessageTimeouts = {};
 
-document.querySelectorAll('.js-add-to-cart')
-    .forEach((button) => {
+function showAddedMessage(productId) {
+    const addedMessage = document.querySelector(
+        `.js-added-to-cart-${productId}`
+    );
 
-        button.addEventListener('click', async () => {
-            try {
-                const { productId } = button.dataset;
+    if (!addedMessage) {
+        return;
+    }
 
-                const quantitySelector = document.querySelector(`.js-quantity-selector-${productId}`);
-                const quantity = Number(quantitySelector.value);
+    addedMessage.classList.add('added-to-cart-visible');
 
+    clearTimeout(addedMessageTimeouts[productId]);
 
-                const response = await fetch(`/cart/${productId}`,{
-                        method: 'POST',
-                    
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            quantity
-                        })
-                    });
-                const data = await response.json();
+    addedMessageTimeouts[productId] = setTimeout(() => {
+        addedMessage.classList.remove('added-to-cart-visible');
+    }, 2000);
+}
 
-                if (data.added) {
+document.querySelectorAll('.js-add-to-cart').forEach((button) => {
+    button.addEventListener('click', async () => {
+        const { productId } = button.dataset;
 
-                    document.querySelector('.js-cart-quantity').innerHTML = data.cartQuantity
-                    const addedMessage = document.querySelector(
-                        `.js-added-to-cart-${productId}`
-                    );
+        // The grid has a quantity selector; the product page does not.
+        const quantitySelector = document.querySelector(
+            `.js-quantity-selector-${productId}`
+        );
 
-                    if (!addedMessage) {
-                        console.error('Added message element not found');
-                        return;
-                    }
+        const quantity = quantitySelector
+            ? Number(quantitySelector.value)
+            : 1;
 
-                    addedMessage.classList.add(
-                        'added-to-cart-visible'
-                    );
+        button.disabled = true;
 
-                    const previousTimeoutId =
-                        addedMessageTimeouts[productId];
+        try {
+            const data = await window.apiFetch(`/cart/${productId}`, {
+                method: 'POST',
+                body: { quantity }
+            });
 
-                    if (previousTimeoutId) {
-                        clearTimeout(previousTimeoutId);
-                    }
-
-                    const timeoutId = setTimeout(() => {
-                        addedMessage.classList.remove(
-                            'added-to-cart-visible'
-                        );
-                    }, 2000);
-
-                    addedMessageTimeouts[productId] = timeoutId;
-
-                }
-
-            } catch (error) {
-                console.error('Add to cart error:', error);
+            if (!data) {
+                return;
             }
-        });
 
+            window.setCartQuantity(data.cartQuantity);
+            showAddedMessage(productId);
+        } catch (error) {
+            window.alert(error.message);
+        } finally {
+            button.disabled = false;
+        }
     });
+});

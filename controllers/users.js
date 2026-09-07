@@ -1,318 +1,134 @@
-
-import bcrypt from 'bcrypt';
-
-import User from '../models/user.js';
-
+import * as userService from '../services/userService.js';
+import {
+    validateLogin,
+    validateRegistration
+} from '../validators/userValidator.js';
+import { AppError } from '../utils/errors.js';
 
 export const loadLogin = (req, res) => {
-
-    res.render('users/login', {
-        error: null,
-        formData: {}
-    });
-
+    res.render('users/login', { error: null, formData: {} });
 };
 
 export const loadRegister = (req, res) => {
-
-    res.render('users/register', {
-        error: null,
-        formData: {}
-    });
-
+    res.render('users/register', { error: null, formData: {} });
 };
 
 export const registerUser = async (req, res) => {
+    const { error, values, credentials } = validateRegistration(req.body);
+
+    if (error) {
+        return res
+            .status(400)
+            .render('users/register', { error, formData: values });
+    }
 
     try {
-
-        const {
-            name,
-            email,
-            password,
-            confirmPassword
-        } = req.body;
-
-
-        if (
-            !name ||
-            !email ||
-            !password ||
-            !confirmPassword
-        ) {
-
-            return res.status(400).render(
+        await userService.registerUser(credentials);
+    } catch (registrationError) {
+        if (isClientError(registrationError)) {
+            return res.status(registrationError.statusCode).render(
                 'users/register',
                 {
-                    error: 'Please fill in all fields.',
-                    formData: {
-                        name,
-                        email
-                    }
+                    error: registrationError.message,
+                    formData: values
                 }
             );
-
         }
 
-
-        if (name.trim().length < 2) {
-
-            return res.status(400).render(
-                'users/register',
-                {
-                    error:
-                        'Please enter a valid name.',
-                    formData: {
-                        name,
-                        email
-                    }
-                }
-            );
-
-        }
-
-
-        const emailPattern =
-            /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-
-        if (!emailPattern.test(email)) {
-
-            return res.status(400).render(
-                'users/register',
-                {
-                    error:
-                        'Please enter a valid email address.',
-                    formData: {
-                        name,
-                        email
-                    }
-                }
-            );
-
-        }
-
-
-        if (password.length < 6) {
-
-            return res.status(400).render(
-                'users/register',
-                {
-                    error:
-                        'Password must be at least 6 characters.',
-                    formData: {
-                        name,
-                        email
-                    }
-                }
-            );
-
-        }
-
-
-        if (password !== confirmPassword) {
-
-            return res.status(400).render(
-                'users/register',
-                {
-                    error:
-                        'Passwords do not match.',
-                    formData: {
-                        name,
-                        email
-                    }
-                }
-            );
-
-        }
-
-
-        const existingUser =
-            await User.findOne({
-                email: email.toLowerCase()
-            });
-
-
-        if (existingUser) {
-
-            return res.status(409).render(
-                'users/register',
-                {
-                    error:
-                        'An account with this email already exists.',
-                    formData: {
-                        name,
-                        email
-                    }
-                }
-            );
-
-        }
-
-
-        const hashedPassword =
-            await bcrypt.hash(password, 10);
-
-
-        await User.create({
-
-            name: name.trim(),
-
-            email: email.toLowerCase().trim(),
-
-            password: hashedPassword
-
-        });
-
-
-        res.redirect('/users/login');
-
+        throw registrationError;
     }
 
-    catch (error) {
-
-        console.error(
-            'Registration error:',
-            error
-        );
-
-
-        res.status(500).render(
-            'users/register',
-            {
-                error:
-                    'Something went wrong. Please try again.',
-                formData: {
-                    name: req.body.name,
-                    email: req.body.email
-                }
-            }
-        );
-
-    }
-
+    res.redirect('/users/login');
 };
 
+export const loginUser = async (req, res, next) => {
+    const { error, values, credentials } = validateLogin(req.body);
 
+    if (error) {
+        return res
+            .status(400)
+            .render('users/login', { error, formData: values });
+    }
 
-export const loginUser = async (req, res) => {
+    let user;
 
     try {
-
-        const {
-            email,
-            password
-        } = req.body;
-
-
-        if (!email || !password) {
-
-            return res.status(400).render(
-                'users/login',
-                {
-                    error: 'Please enter your email and password.',
-                    formData: {
-                        email
-                    }
-                }
-            );
-
+        user = await userService.authenticate(
+            credentials.email,
+            credentials.password
+        );
+    } catch (loginError) {
+        if (isClientError(loginError)) {
+            return res
+                .status(loginError.statusCode)
+                .render('users/login', {
+                    error: loginError.message,
+                    formData: values
+                });
         }
 
-
-        const user = await User.findOne({
-            email: email.toLowerCase().trim()
-        });
-
-
-        if (!user) {
-
-            return res.status(401).render(
-                'users/login',
-                {
-                    error:
-                        'Incorrect email or password.',
-                    formData: {
-                        email
-                    }
-                }
-            );
-
-        }
-
-
-        const isPasswordCorrect =
-            await bcrypt.compare(
-                password,
-                user.password
-            );
-
-
-        if (!isPasswordCorrect) {
-
-            return res.status(401).render(
-                'users/login',
-                {
-                    error:
-                        'Incorrect email or password.',
-                    formData: {
-                        email
-                    }
-                }
-            );
-
-        }
-
-
-        // Authentication successful
-        // Sessions will be added next
-
-        // Strore the logged-in users's ID
-        req.session.userId = user._id;
-
-        // Redirect after a successful login
-        res.redirect('/products');
-
+        throw loginError;
     }
 
-    catch (error) {
+    const returnTo = safeReturnTo(req.session.returnTo);
 
-        console.error(
-            'Login error:',
-            error
-        );
+    // A brand new session id on sign-in. Without this, a session id
+    // planted before login stays valid afterwards (session fixation).
+    req.session.regenerate((regenerateError) => {
+        if (regenerateError) {
+            return next(regenerateError);
+        }
 
+        req.session.userId = user.id;
+        req.session.user = { name: user.name, email: user.email };
 
-        res.status(500).render(
-            'users/login',
-            {
-                error:
-                    'Something went wrong. Please try again.',
-                formData: {
-                    email: req.body.email
-                }
+        // Write the session before redirecting, so the very next
+        // request is guaranteed to see the signed-in state.
+        req.session.save((saveError) => {
+            if (saveError) {
+                return next(saveError);
             }
-        );
 
-    }
-
+            res.redirect(returnTo);
+        });
+    });
 };
 
-
-
-export const logoutUser = (req, res) => {
+export const logoutUser = (req, res, next) => {
     req.session.destroy((error) => {
-
         if (error) {
-            console.error('Logout error:', error);
-
-            return res.status(500).send(
-                'Something went wrong while logging out.'
-            );
+            return next(error);
         }
 
-        res.clearCookie('connect.sid');
+        res.clearCookie(req.app.locals.sessionCookieName);
 
         res.redirect('/products');
     });
 };
+
+function isClientError(error) {
+    return (
+        error instanceof AppError &&
+        error.statusCode >= 400 &&
+        error.statusCode < 500
+    );
+}
+
+/**
+ * Only ever returns a path on this site.
+ *
+ * `returnTo` comes from the URL the visitor was refused, so it has to
+ * be treated as untrusted: without this check a link could send someone
+ * through our sign-in form and out to an attacker's site.
+ */
+function safeReturnTo(candidate) {
+    if (
+        typeof candidate === 'string' &&
+        candidate.startsWith('/') &&
+        !candidate.startsWith('//')
+    ) {
+        return candidate;
+    }
+
+    return '/products';
+}

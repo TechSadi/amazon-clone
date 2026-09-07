@@ -6,7 +6,7 @@
         <div class="product-container">
           <a href="/products/<%= product._id %>">
             <div class="product-image-container">
-              <img class="product-image" src="<%= product.image %>">
+              <img class="product-image" src="/<%= product.image %>" alt="<%= product.name %>">
             </div>
           </a>
           <a href="/products/<%= product._id %>" class="product-name-link">
@@ -16,19 +16,21 @@
           </a>
 
           <div class="product-rating-container">
-            <img class="product-rating-stars" src="images/ratings/rating-45.png">
+            <% const stars = String(Math.round((product.rating.stars || 0) * 10)).padStart(2, '0'); %>
+            <img class="product-rating-stars" src="/images/ratings/rating-<%= stars %>.png"
+              alt="Rated <%= product.rating.stars || 0 %> out of 5 stars">
             <div class="product-rating-count link-primary">
               <%= product.rating.count %>
             </div>
           </div>
 
           <div class="product-price">
-            <% let price=product.priceCents / 100 %>
-              $<%= price %>
+            $<%= (product.priceCents / 100).toFixed(2) %>
           </div>
 
           <div class="product-quantity-container">
-            <select class="js-quantity-selector-<%=product._id%>">
+            <select class="js-quantity-selector-<%=product._id%>"
+              aria-label="Quantity of <%= product.name %>">
               <option selected value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -45,7 +47,7 @@
           <div class="product-spacer"></div>
 
           <div class="added-to-cart js-added-to-cart-<%= product._id %>">
-            <img src="images/icons/checkmark.png">
+            <img src="/images/icons/checkmark.png" alt="">
             Added
           </div>
 

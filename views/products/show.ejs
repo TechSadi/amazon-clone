@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <title>Amazon Project</title>
@@ -8,6 +8,8 @@
       (Responsive design = make the website look good on
       smaller screen sizes like a phone or a tablet). -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="<%= csrfToken %>">
 
     <!-- Load a font called Roboto from Google Fonts. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,8 +22,8 @@
     <link rel="stylesheet" href="/styles/pages/amazon.css">
     <link rel="stylesheet" href="/styles/pages/notfound.css">
     <link rel="stylesheet" href="/styles/pages/show.css">
+    <script src="/scripts/http.js" defer></script>
     <script src="/scripts/index.js" defer></script>
-    <script src="/scripts/show.js" defer></script>
 </head>
 
 <body>
@@ -53,7 +55,8 @@
                         Hello, <%= currentUser.name %>
                     </span>
 
-                    <form action="/users/logout" method="POST">
+                    <form action="/users/logout" method="POST" class="js-logout-form">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="account-action-button">
                             Sign out
                         </button>
@@ -153,7 +156,7 @@
 
                 <div class="product-price">
                     <span class="currency">$</span>
-                    <% let price=Math.floor(product.priceCents / 100) %>
+                    <% let price=(product.priceCents / 100).toFixed(2) %>
                         <span class="price-whole">
                             <%= price %>
                         </span>

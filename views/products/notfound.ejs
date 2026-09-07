@@ -9,22 +9,33 @@
 
             </div>
 
-            <h1>Product Not Found</h1>
+            <% if (q) { %>
 
+                <h1>Product Not Found</h1>
 
-            <p class="search-result-text">
-                We couldn't find any products matching
-            </p>
+                <p class="search-result-text">
+                    We couldn't find any products matching
+                </p>
 
-            <p class="search-query">
-                "<%= q %>"
-            </p>
+                <p class="search-query">
+                    "<%= q %>"
+                </p>
 
+                <p class="suggestion-text">
+                    Check the spelling, try a different search term,
+                    or browse our available products.
+                </p>
 
-            <p class="suggestion-text">
-                Check the spelling, try a different search term,
-                or browse our available products.
-            </p>
+            <% } else { %>
+
+                <h1>No products yet</h1>
+
+                <p class="suggestion-text">
+                    There is nothing in the store at the moment.
+                    Please check back soon.
+                </p>
+
+            <% } %>
 
 
             <div class="not-found-buttons">

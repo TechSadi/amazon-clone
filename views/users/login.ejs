@@ -4,6 +4,7 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="<%= csrfToken %>">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -70,6 +71,8 @@
 
 
                     <form action="/users/login" method="POST" id="login-form" novalidate>
+
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
                         <!-- EMAIL -->
 

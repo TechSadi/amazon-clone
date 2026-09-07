@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <title>Tracking</title>
@@ -8,6 +8,8 @@
       (Responsive design = make the website look good on
       smaller screen sizes like a phone or a tablet). -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="<%= csrfToken %>">
 
   <!-- Load a font called Roboto from Google Fonts. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,6 +20,7 @@
   <link rel="stylesheet" href="/styles/shared/general.css">
   <link rel="stylesheet" href="/styles/shared/amazon-header.css">
   <link rel="stylesheet" href="/styles/pages/tracking.css">
+  <script src="/scripts/tracking.js" defer></script>
 </head>
 
 <body>
@@ -47,7 +50,8 @@
             Hello, <%= currentUser.name %>
           </span>
     
-          <form action="/users/logout" method="POST">
+          <form action="/users/logout" method="POST" class="js-logout-form">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button type="submit" class="account-action-button">
               Sign out
             </button>
@@ -111,14 +115,14 @@
       </div>
 
       <div class="product-info">
-        <%= productDetails.product.name %>
+        <%= item.name %>
       </div>
 
       <div class="product-info">
-        Quantity: <%= productDetails.quantity %>
+        Quantity: <%= item.quantity %>
       </div>
 
-      <img class="product-image" src="/<%= productDetails.product.image %>">
+      <img class="product-image" src="/<%= item.image %>" alt="<%= item.name %>">
 
       <div class="progress-labels-container">
 
@@ -140,15 +144,12 @@
       </div>
 
       <div class="progress-bar-container">
-        <div class="progress-bar js-progress-bar" ></div>
+        <div class="progress-bar js-progress-bar" data-progress="<%= percentProgress %>"
+          role="progressbar" aria-valuenow="<%= percentProgress %>" aria-valuemin="0" aria-valuemax="100"
+          aria-label="Delivery progress"></div>
       </div>
     </div>
   </div>
-  <script>
-    const progressBar = document.querySelector('.js-progress-bar');
-
-    progressBar.style.width = '<%= percentProgress %>%';
-  </script>
 </body>
 
 </html>

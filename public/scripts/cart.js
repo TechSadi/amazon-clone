@@ -188,20 +188,28 @@
        Checkout
        ---------------------------------------------------------------- */
 
-    var checkoutButton = App.$('.js-checkout-button');
+    var checkoutLink = App.$('.js-checkout-link');
     var checkoutOverlay = App.$('.js-checkout-overlay');
 
-    if (checkoutButton) {
-        checkoutButton.addEventListener('click', function () {
-            // No artificial pause: the overlay covers the real page load
-            // and a second click cannot start a second navigation.
-            checkoutButton.disabled = true;
+    if (checkoutLink) {
+        checkoutLink.addEventListener('click', function (event) {
+            // The browser performs the navigation. This only covers it
+            // with the overlay, and stays out of the way of a
+            // middle-click or a modified click opening a new tab.
+            if (
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+            ) {
+                return;
+            }
 
             if (checkoutOverlay) {
                 checkoutOverlay.classList.add('is-active');
             }
-
-            window.location.href = '/checkout';
         });
     }
 })();

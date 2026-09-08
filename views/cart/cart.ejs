@@ -64,10 +64,8 @@
 
                             <%
                                 const productId = item.product._id;
-                                const unitPrice = (item.product.priceCents / 100).toFixed(2);
-                                const linePrice = (
-                                    (item.product.priceCents * item.quantity) / 100
-                                ).toFixed(2);
+                                const unitPrice = money(item.product.priceCents);
+                                const linePrice = money(item.product.priceCents * item.quantity);
                             %>
 
                             <li class="cart-item js-cart-item" data-product-id="<%= productId %>">
@@ -176,9 +174,12 @@
                         Shipping and tax are calculated at checkout.
                     </p>
 
-                    <button type="button" class="btn btn--primary btn--lg btn--block js-checkout-button">
+                    <%# A link, not a button: this navigates. As a button it
+                        did nothing without JavaScript, and could not be
+                        opened in a new tab or middle-clicked. %>
+                    <a class="btn btn--primary btn--lg btn--block js-checkout-link" href="/checkout">
                         Proceed to checkout
-                    </button>
+                    </a>
 
                     <a class="btn btn--secondary btn--block" href="/products">
                         Continue shopping

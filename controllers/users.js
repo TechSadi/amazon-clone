@@ -127,11 +127,3 @@ function isClientError(error) {
         error.statusCode < 500
     );
 }
-
-/**
- * Only ever returns a path on this site.
- *
- * `returnTo` comes from the URL the visitor was refused, so it has to
- * be treated as untrusted: without this check a link could send someone
- * through our sign-in form and out to an attacker's site.
- */

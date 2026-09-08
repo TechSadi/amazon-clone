@@ -5,7 +5,7 @@
 <% block('scripts', '<script src="' + asset('/scripts/products.js') + '" defer></script>') %>
 
 <%
-    const price = (product.priceCents / 100).toFixed(2);
+    const price = money(product.priceCents);
     const keywords = Array.isArray(product.keywords) ? product.keywords : [];
     const primaryCategory = product.category || keywords[0] || null;
 %>
@@ -125,14 +125,14 @@
                     <% if (standardDelivery.priceCents === 0) { %>
                         <strong class="buy-box__free">FREE delivery</strong>
                     <% } else { %>
-                        <strong>$<%= (standardDelivery.priceCents / 100).toFixed(2) %> delivery</strong>
+                        <strong>$<%= money(standardDelivery.priceCents) %> delivery</strong>
                     <% } %>
                     <span><%= standardDelivery.date %></span>
                 </p>
 
                 <p class="buy-box__delivery-fast">
                     Or fastest delivery <strong><%= fastestDelivery.date %></strong>
-                    for $<%= (fastestDelivery.priceCents / 100).toFixed(2) %>
+                    for $<%= money(fastestDelivery.priceCents) %>
                 </p>
 
                 <p class="buy-box__stock">In stock</p>

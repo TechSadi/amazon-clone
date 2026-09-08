@@ -665,12 +665,10 @@ hr {
     background-color: var(--color-surface-sunken);
 }
 
-.input--invalid,
 .input.is-invalid {
     border-color: var(--color-danger);
 }
 
-.input--invalid:focus,
 .input.is-invalid:focus {
     border-color: var(--color-danger);
     box-shadow: 0 0 0 3px rgba(177, 39, 4, 0.18);

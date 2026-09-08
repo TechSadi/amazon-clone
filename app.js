@@ -27,6 +27,7 @@ import { csrfProtection } from './middleware/csrf.js';
 import { generalLimiter } from './middleware/rateLimit.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { asset, loadAssetHashes } from './utils/assets.js';
+import { formatCurrency } from './utils/money.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, 'public');
@@ -50,6 +51,11 @@ app.locals.sessionCookieName = config.session.name;
 // Templates build every stylesheet and script URL through this, so a
 // deployed change is picked up immediately despite the long cache.
 app.locals.asset = asset;
+
+// The one place cents become a displayed string. Templates used to do
+// their own `(cents / 100).toFixed(2)` in eight places, which is both a
+// duplicate of this and unguarded: a missing price rendered as "NaN".
+app.locals.money = formatCurrency;
 
 // Which social buttons the sign-in and sign-up pages should show. This
 // is fixed at boot by the configured credentials, so a provider without

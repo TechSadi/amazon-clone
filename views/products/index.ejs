@@ -65,7 +65,7 @@
                         }) %>
 
                         <p class="price product-card__price">
-                            <span class="price__symbol">$</span><%= (product.priceCents / 100).toFixed(2) %>
+                            <span class="price__symbol">$</span><%= money(product.priceCents) %>
                         </p>
 
                         <label class="visually-hidden" for="qty-<%= product._id %>">

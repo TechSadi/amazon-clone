@@ -75,9 +75,7 @@
                         <%
                             const productId = item.product._id;
                             const selectedOption = getDeliveryOption(item.deliveryOptionId);
-                            const linePrice = (
-                                (item.product.priceCents * item.quantity) / 100
-                            ).toFixed(2);
+                            const linePrice = money(item.product.priceCents * item.quantity);
                         %>
 
                         <article class="card checkout-item js-checkout-item" data-product-id="<%= productId %>">
@@ -185,7 +183,7 @@
                                                     <% if (option.priceCents === 0) { %>
                                                         FREE shipping
                                                     <% } else { %>
-                                                        $<%= (option.priceCents / 100).toFixed(2) %> shipping
+                                                        $<%= money(option.priceCents) %> shipping
                                                     <% } %>
                                                 </span>
                                             </label>

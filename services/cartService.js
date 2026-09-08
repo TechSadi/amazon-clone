@@ -219,13 +219,22 @@ export async function setItemDeliveryOption(
     }
 }
 
+/**
+ * Removes an item, and reports 404 when it was not there to remove.
+ *
+ * The item is named in the filter rather than checked against
+ * `modifiedCount` afterwards: `timestamps` bumps `updatedAt` on every
+ * matched document, so a `$pull` that removed nothing still counted as
+ * a modification and the "not in your cart" case never surfaced. It
+ * also spared placeOrder's optimistic check a pointless version bump.
+ */
 export async function removeItem(userId, productId) {
     const result = await Cart.updateOne(
-        { user: userId },
+        { user: userId, 'items.product': productId },
         { $pull: { items: { product: productId } } }
     );
 
-    if (result.modifiedCount === 0) {
+    if (result.matchedCount === 0) {
         throw notFound('That product is not in your cart.');
     }
 }

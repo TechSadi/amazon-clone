@@ -1,7 +1,7 @@
 <% layout('layouts/focused') %>
 <% block('title', 'Checkout') %>
-<% block('styles', '<link rel="stylesheet" href="/styles/pages/checkout.css">') %>
-<% block('scripts', '<script src="/scripts/checkout.js" defer></script>') %>
+<% block('styles', '<link rel="stylesheet" href="' + asset('/styles/pages/checkout.css') + '">') %>
+<% block('scripts', '<script src="' + asset('/scripts/checkout.js') + '" defer></script>') %>
 
 <% block('focusedHeader', `
     <p class="focused-header__title">

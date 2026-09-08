@@ -1,8 +1,8 @@
 <% layout('layouts/base') %>
 <% block('title', product.name) %>
 <% block('description', product.name) %>
-<% block('styles', '<link rel="stylesheet" href="/styles/pages/product-detail.css">') %>
-<% block('scripts', '<script src="/scripts/products.js" defer></script>') %>
+<% block('styles', '<link rel="stylesheet" href="' + asset('/styles/pages/product-detail.css') + '">') %>
+<% block('scripts', '<script src="' + asset('/scripts/products.js') + '" defer></script>') %>
 
 <%
     const price = (product.priceCents / 100).toFixed(2);

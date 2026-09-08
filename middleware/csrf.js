@@ -24,13 +24,24 @@ export const csrfProtection = (req, res, next) => {
         );
     }
 
-    if (!req.session.csrfToken) {
+    const isSafeMethod = SAFE_METHODS.has(req.method);
+
+    // Minting a token starts a session, and a session is a document in
+    // MongoDB plus a Set-Cookie. Only a request that can render a form,
+    // or one that changes something, has any use for a token, so a
+    // crawler, a health probe or a missing-image 404 no longer leaves a
+    // session behind.
+    const needsToken =
+        !isSafeMethod ||
+        (req.get('accept') || '').includes('text/html');
+
+    if (!req.session.csrfToken && needsToken) {
         req.session.csrfToken = crypto.randomBytes(32).toString('hex');
     }
 
-    res.locals.csrfToken = req.session.csrfToken;
+    res.locals.csrfToken = req.session.csrfToken || '';
 
-    if (SAFE_METHODS.has(req.method)) {
+    if (isSafeMethod) {
         return next();
     }
 

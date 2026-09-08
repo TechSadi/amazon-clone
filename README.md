@@ -109,6 +109,23 @@ npm start       # production
 
 Then open <http://localhost:3000>.
 
+Run the unit tests (no database required):
+
+```bash
+npm test
+```
+
+### Scripts
+
+| Script            | What it does                                                  |
+| ----------------- | -------------------------------------------------------------- |
+| `npm install`     | Installs dependencies                                          |
+| `npm run dev`     | Development server with auto-reload (nodemon)                  |
+| `npm start`       | Production server. This is the deployment start command.       |
+| `npm test`        | Unit tests for pricing, validation and input parsing           |
+| `npm run seed`    | **Replaces** the product catalogue. Never run in production.   |
+| `npm run migrate` | One-off backfill of order snapshots. Safe to re-run.           |
+
 ## Environment variables
 
 | Variable         | Required | Default      | Purpose                                            |
@@ -213,14 +230,72 @@ handling. The other three providers share one code path; Apple does not.
 
 ## Deploying
 
-* Set `NODE_ENV=production`. This turns on `secure` session cookies and HSTS.
-* Set `TRUST_PROXY=true` if a proxy terminates TLS (Render, Heroku, nginx),
-  otherwise the secure cookie is dropped and nobody can sign in.
-* Use a `SESSION_SECRET` of at least 32 characters that is unique to the
-  environment. Sessions are stored in MongoDB, so changing it signs
-  everyone out.
-* `npm start` is the start command. Never run `npm run seed` against
-  production data.
+The application targets a generic Node.js host: nothing in it assumes a
+particular provider.
+
+**Requirements**
+
+* Node.js 20 or newer (`engines` in `package.json`; developed on 24).
+* A reachable MongoDB instance. Sessions live in the same database and
+  share the same connection, so there is nothing else to provision.
+* A build step is not needed. `npm ci --omit=dev` then `npm start`.
+
+**Start command**
+
+```bash
+npm start
+```
+
+**Configuration**
+
+* Set `NODE_ENV=production`. This turns on `secure` session cookies,
+  HSTS, `upgrade-insecure-requests`, long asset caching, and suppresses
+  developer error detail.
+* Set `TRUST_PROXY=true` if a proxy terminates TLS (Render, Heroku,
+  Fly, nginx). Without it Express sees `http`, refuses to send a
+  `secure` cookie, and **nobody can sign in**. It is also what makes the
+  rate limiter see the real client IP instead of the proxy's.
+* Set `BASE_URL` to the public origin, with no trailing slash, and
+  register `BASE_URL/auth/<provider>/callback` with each social provider.
+* Use a `SESSION_SECRET` of at least 32 characters, unique to the
+  environment. Startup refuses a shorter one in production. Changing it
+  signs everyone out.
+* `PORT` is read from the environment, which is what most platforms set.
+
+**HTTPS is assumed in production.** The session cookie is marked
+`Secure`, so the site must be served over TLS end to end (directly or
+through a proxy with `TRUST_PROXY=true`).
+
+**Health check**
+
+`GET /healthz` returns `200` when MongoDB is connected and `503` when it
+is not. It is served before the session and rate-limit middleware, so
+probing it neither creates session documents nor consumes a rate-limit
+budget.
+
+```json
+{ "status": "ok", "database": "connected", "uptimeSeconds": 42 }
+```
+
+**Startup and shutdown**
+
+* If MongoDB cannot be reached at boot, the process logs the reason and
+  exits `1` rather than serving a broken site. A connection lost *after*
+  boot is left to Mongoose to retry.
+* Missing or invalid configuration is reported as a list of every
+  problem at once, then the process exits `1`.
+* `SIGTERM` and `SIGINT` stop new connections, let in-flight requests
+  finish, close MongoDB and exit `0`, with a 10-second cap so a stuck
+  request cannot block a deploy.
+
+**Caching and assets**
+
+Stylesheets and scripts are served under a content hash
+(`/styles/core.css?v=<hash>`) computed at boot, and cached for a year.
+A deployed change produces a new URL, so returning visitors are never
+left on a stale asset. Other static files are cached for a week, and
+every generated page is `private, no-cache`. Responses are gzipped:
+the product listing drops from roughly 150 kB to 8 kB on the wire.
 
 ## Security
 
@@ -234,6 +309,12 @@ handling. The other three providers share one code path; Apple does not.
 * Sign-in, order placement and cart writes are rate limited.
 * Errors are handled centrally; stack traces are never sent to the browser
   in production.
+* JSON and form bodies are capped at 10 kB.
+* A session is only created for a request that can actually use a CSRF
+  token, so crawlers and missing-asset requests do not fill the session
+  collection.
+* Pages are `Cache-Control: private, no-cache` and `Vary: Cookie`, so one
+  visitor's page can never be served to another from a shared cache.
 
 ## Project Status
 

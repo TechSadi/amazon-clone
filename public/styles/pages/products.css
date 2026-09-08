@@ -91,26 +91,22 @@
     font-size: var(--text-xl);
 }
 
-/* Pushes the actions to the bottom edge of every card in the row. */
-.product-card__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: auto;
-    padding-top: var(--space-2);
-}
-
+/* A compact selector on its own line, sized to its content rather than
+   stretched across the card. */
 .product-card__quantity {
-    width: 64px;
-    flex-shrink: 0;
-    padding-right: var(--space-5);
+    width: 68px;
+    min-height: 32px;
+    /* Adds to the body's gap, so the buy action is separated from the
+       product information rather than crowded against it. */
+    margin-bottom: var(--space-2);
+    padding: var(--space-1) var(--space-6) var(--space-1) var(--space-2);
+    font-size: var(--text-base);
 }
 
-/* The label must not wrap: a two-line "Add to / cart" makes the button
-   taller than its neighbours and breaks the row. */
+/* `margin-top: auto` is what pins the button to the bottom edge, so the
+   buttons across a row line up however long the names above them run. */
 .product-card__add {
-    flex: 1;
-    min-width: 0;
+    margin-top: auto;
     padding-inline: var(--space-3);
     white-space: nowrap;
 }

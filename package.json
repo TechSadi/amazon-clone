@@ -9,11 +9,13 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "test": "node --test",
     "seed": "node seed.js",
     "migrate": "node scripts/backfill-order-snapshots.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "compression": "^1.8.1",
     "connect-mongo": "^6.0.0",
     "dayjs": "^1.11.23",
     "dotenv": "^17.4.2",

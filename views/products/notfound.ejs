@@ -7,7 +7,7 @@
 %>
 <% layout('layouts/base') %>
 <% block('title', q ? 'No results for ' + q : 'No products yet') %>
-<% block('styles', '<link rel="stylesheet" href="/styles/pages/products.css">') %>
+<% block('styles', '<link rel="stylesheet" href="' + asset('/styles/pages/products.css') + '">') %>
 
 <main class="page" id="main">
 

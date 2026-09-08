@@ -1,7 +1,7 @@
 <% layout('layouts/base') %>
 <% block('title', 'Track package') %>
-<% block('styles', '<link rel="stylesheet" href="/styles/pages/tracking.css">') %>
-<% block('scripts', '<script src="/scripts/tracking.js" defer></script>') %>
+<% block('styles', '<link rel="stylesheet" href="' + asset('/styles/pages/tracking.css') + '">') %>
+<% block('scripts', '<script src="' + asset('/scripts/tracking.js') + '" defer></script>') %>
 
 <%
     const stage = percentProgress >= 100

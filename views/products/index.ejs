@@ -1,33 +1,36 @@
 <% layout('layouts/base') %>
 <% block('title', q ? 'Results for ' + q : 'All products') %>
-<% block('styles', '<link rel="stylesheet" href="/styles/pages/products.css">') %>
-<% block('scripts', '<script src="/scripts/products.js" defer></script>') %>
+<% block('styles', '<link rel="stylesheet" href="' + asset('/styles/pages/products.css') + '">') %>
+<% block('scripts', '<script src="' + asset('/scripts/products.js') + '" defer></script>') %>
 
 <main class="page" id="main">
 
     <div class="container container--wide">
 
-        <div class="page-header">
+        <% if (q) { %>
 
-            <div>
-                <h1 class="page-title">
-                    <% if (q) { %>
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">
                         Results for &ldquo;<%= q %>&rdquo;
-                    <% } else { %>
-                        All products
-                    <% } %>
-                </h1>
+                    </h1>
 
-                <p class="page-subtitle">
-                    <%= products.length %>
-                    <%= products.length === 1 ? 'product' : 'products' %>
-                    <% if (q) { %>
+                    <p class="page-subtitle">
+                        <%= products.length %>
+                        <%= products.length === 1 ? 'product' : 'products' %>
                         &middot; <a class="link" href="/products">Clear search</a>
-                    <% } %>
-                </p>
+                    </p>
+                </div>
             </div>
 
-        </div>
+        <% } else { %>
+
+            <%# The unfiltered catalogue leads with the products themselves.
+                The heading still has to exist, though: it is what tells a
+                screen reader and the document outline what this page is. %>
+            <h1 class="visually-hidden">All products</h1>
+
+        <% } %>
 
         <ul class="product-grid">
 
@@ -65,32 +68,28 @@
                             <span class="price__symbol">$</span><%= (product.priceCents / 100).toFixed(2) %>
                         </p>
 
-                        <div class="product-card__actions">
+                        <label class="visually-hidden" for="qty-<%= product._id %>">
+                            Quantity of <%= product.name %>
+                        </label>
 
-                            <label class="visually-hidden" for="qty-<%= product._id %>">
-                                Quantity of <%= product.name %>
-                            </label>
+                        <select
+                            id="qty-<%= product._id %>"
+                            class="select product-card__quantity js-quantity-select"
+                            data-product-id="<%= product._id %>"
+                        >
+                            <% for (let value = 1; value <= 10; value++) { %>
+                                <option value="<%= value %>"><%= value %></option>
+                            <% } %>
+                        </select>
 
-                            <select
-                                id="qty-<%= product._id %>"
-                                class="select product-card__quantity js-quantity-select"
-                                data-product-id="<%= product._id %>"
-                            >
-                                <% for (let value = 1; value <= 10; value++) { %>
-                                    <option value="<%= value %>"><%= value %></option>
-                                <% } %>
-                            </select>
-
-                            <button
-                                type="button"
-                                class="btn btn--primary btn--pill product-card__add js-add-to-cart"
-                                data-product-id="<%= product._id %>"
-                                data-product-name="<%= product.name %>"
-                            >
-                                Add to cart
-                            </button>
-
-                        </div>
+                        <button
+                            type="button"
+                            class="btn btn--primary btn--pill btn--block product-card__add js-add-to-cart"
+                            data-product-id="<%= product._id %>"
+                            data-product-name="<%= product.name %>"
+                        >
+                            Add to cart
+                        </button>
 
                     </div>
 

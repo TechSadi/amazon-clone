@@ -1,7 +1,7 @@
 <% layout('layouts/focused') %>
 <% block('title', 'Sign in') %>
-<% block('styles', '<link rel="stylesheet" href="/styles/pages/auth.css">') %>
-<% block('scripts', '<script src="/scripts/auth-form.js" defer></script>') %>
+<% block('styles', '<link rel="stylesheet" href="' + asset('/styles/pages/auth.css') + '">') %>
+<% block('scripts', '<script src="' + asset('/scripts/auth-form.js') + '" defer></script>') %>
 
 <main class="page auth-page" id="main">
 

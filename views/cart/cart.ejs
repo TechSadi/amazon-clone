@@ -1,7 +1,7 @@
 <% layout('layouts/base') %>
 <% block('title', 'Shopping cart') %>
-<% block('styles', '<link rel="stylesheet" href="/styles/pages/cart.css">') %>
-<% block('scripts', '<script src="/scripts/cart.js" defer></script>') %>
+<% block('styles', '<link rel="stylesheet" href="' + asset('/styles/pages/cart.css') + '">') %>
+<% block('scripts', '<script src="' + asset('/scripts/cart.js') + '" defer></script>') %>
 
 <% const items = cart && cart.items ? cart.items : []; %>
 
